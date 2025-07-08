@@ -1,0 +1,70 @@
+/* Estilos específicos para la página de agenda */
+.agenda-section {
+    background: #23232b;
+    color: #fff;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(155,113,176,0.10);
+    margin: 2.5rem auto 2rem auto;
+    padding: 2.5rem 2rem 2rem 2rem;
+    max-width: 420px;
+    animation: fadeInUp 1.2s 0.8s both;
+    text-align: center;
+}
+.agenda-section h2 {
+    color: #BBA3D0;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+}
+.agenda-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+.agenda-form label {
+    text-align: left;
+    font-weight: 600;
+    color: #BBA3D0;
+}
+.agenda-form input, .agenda-form select {
+    padding: 0.7rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: #292933;
+    color: #fff;
+    font-size: 1rem;
+    box-shadow: 0 1px 6px rgba(187,163,208,0.08);
+    outline: none;
+    transition: box-shadow 0.2s, background 0.2s;
+}
+.agenda-form input:focus, .agenda-form select:focus {
+    box-shadow: 0 0 0 2px #BBA3D0;
+    background: #23232b;
+}
+.agenda-form button {
+    background: linear-gradient(120deg, #222 60%, #9B71B0 100%);
+    color: #fff;
+    border: none;
+    border-radius: 25px;
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+    box-shadow: 0 2px 8px rgba(155,113,176,0.10);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.agenda-form button:hover {
+    background: linear-gradient(120deg, #9B71B0 60%, #BBA3D0 100%);
+    color: #222;
+    transform: scale(1.04);
+}
+.mensaje-exito {
+    color: #BBA3D0;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    animation: fadeIn 1s both;
+}
