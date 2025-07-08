@@ -40,7 +40,9 @@
                 <label for="fecha">Fecha:</label>
                 <input type="date" id="fecha" name="fecha" required>
                 <label for="hora">Hora:</label>
-                <input type="time" id="hora" name="hora" required>
+                <select id="hora" name="hora" required>
+                    <option value="">Selecciona una hora</option>
+                </select>
                 <button type="submit">Agendar</button>
             </form>
             <div class="mensaje-exito" style="display:none;">¡Tu turno fue agendado con éxito!</div>
