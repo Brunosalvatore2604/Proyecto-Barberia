@@ -313,6 +313,66 @@ footer {
     animation: fadeIn 1.5s 1.7s both;
 }
 
+/* --- Responsive para móviles --- */
+@media (max-width: 600px) {
+    header {
+        padding: 1.2rem 0 0.7rem 0;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+    }
+    .nav-principal {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem 0.5rem;
+        font-size: 1rem;
+    }
+    header h1 {
+        font-size: 1.5rem;
+        padding: 0.2em 0.5em;
+    }
+    .ubicacion {
+        font-size: 0.95rem;
+        padding: 0.2em 0.7em;
+    }
+    main {
+        max-width: 100vw;
+        margin: 1rem 0;
+        padding: 0 0.3rem;
+    }
+    .bienvenida {
+        flex-direction: column;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        padding: 0;
+    }
+    .bienvenida-img {
+        min-width: 100px;
+        max-width: 100vw;
+        border-radius: 12px 12px 0 0;
+        padding: 0;
+    }
+    .bienvenida-img img {
+        border-radius: 12px 12px 0 0;
+    }
+    .bienvenida-info {
+        padding: 1.2em 0.7em 1.2em 0.7em;
+        font-size: 1rem;
+    }
+    .servicios {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+        padding: 1.2em 0.7em;
+    }
+    .servicio {
+        padding: 1.2em 0.7em;
+        font-size: 1rem;
+    }
+    .footer {
+        font-size: 0.9rem;
+        padding: 1em 0.5em;
+    }
+}
+
 @media (max-width: 900px) {
     .bienvenida {
         flex-direction: column;

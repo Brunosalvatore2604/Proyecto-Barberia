@@ -7,20 +7,6 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Al iniciar el server, asegurarse de que la columna token existe
-(async () => {
-    try {
-        await pool.query("ALTER TABLE turnos ADD COLUMN token VARCHAR(64) DEFAULT NULL");
-        console.log('Columna token agregada');
-    } catch (err) {
-        if (err.code === 'ER_DUP_FIELDNAME' || (err.sqlMessage && err.sqlMessage.includes('Duplicate column name'))) {
-            console.log('La columna token ya existe');
-        } else {
-            console.error('Error al verificar/crear columna token:', err);
-        }
-    }
-})();
-
 // Probar conexión a la base de datos al iniciar
 pool.getConnection()
     .then(conn => {
@@ -35,7 +21,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Configuración de nodemailer para Gmail
-const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransporgitt({
     service: 'gmail',
     auth: {
         user: 'beautyclub.automatic@gmail.com',
