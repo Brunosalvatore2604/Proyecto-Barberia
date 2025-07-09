@@ -1,0 +1,48 @@
+body {
+    background: #f7f7fa;
+    font-family: 'Montserrat', Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+}
+
+.cancelar-container {
+    max-width: 400px;
+    margin: 60px auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 2.5em 2em 2em 2em;
+    text-align: center;
+}
+
+.cancelar-container h1 {
+    color: #b06ab3;
+    margin-bottom: 1em;
+    font-size: 2em;
+}
+
+#cancelar-content p, #cancelar-content h2 {
+    color: #444;
+    margin-bottom: 1.5em;
+}
+
+.btn-cancelar {
+    background: #c00;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 1em 2em;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-cancelar:hover {
+    background: #a00;
+}
+
+.msg {
+    margin-top: 1.5em;
+    color: #b06ab3;
+    font-weight: bold;
+}

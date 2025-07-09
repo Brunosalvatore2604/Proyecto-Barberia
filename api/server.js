@@ -2,9 +2,24 @@ const express = require('express');
 const path = require('path');
 const pool = require('./db');
 const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Al iniciar el server, asegurarse de que la columna token existe
+(async () => {
+    try {
+        await pool.query("ALTER TABLE turnos ADD COLUMN token VARCHAR(64) DEFAULT NULL");
+        console.log('Columna token agregada');
+    } catch (err) {
+        if (err.code === 'ER_DUP_FIELDNAME' || (err.sqlMessage && err.sqlMessage.includes('Duplicate column name'))) {
+            console.log('La columna token ya existe');
+        } else {
+            console.error('Error al verificar/crear columna token:', err);
+        }
+    }
+})();
 
 // Probar conexión a la base de datos al iniciar
 pool.getConnection()
@@ -36,21 +51,6 @@ transporter.verify(function(error, success) {
         console.log('Nodemailer listo para enviar correos');
     }
 });
-
-// Al iniciar el server, asegurarse de que la columna profesional existe
-(async () => {
-    try {
-        // Intentar agregar la columna, si ya existe MySQL lanzará un error que ignoramos
-        await pool.query("ALTER TABLE turnos ADD COLUMN profesional VARCHAR(30) NOT NULL DEFAULT 'Agustin' AFTER nombre");
-        console.log('Columna profesional agregada');
-    } catch (err) {
-        if (err.code === 'ER_DUP_FIELDNAME' || (err.sqlMessage && err.sqlMessage.includes('Duplicate column name'))) {
-            console.log('La columna profesional ya existe');
-        } else {
-            console.error('Error al verificar/crear columna profesional:', err);
-        }
-    }
-})();
 
 // Endpoint para obtener horarios disponibles de un día
 app.get('/api/horarios', async (req, res) => {
@@ -90,21 +90,58 @@ app.post('/api/turnos', async (req, res) => {
         if (rows.length > 0) {
             return res.status(409).json({ error: 'Ese horario ya está ocupado' });
         }
+        // Generar token único para cancelar
+        const token = crypto.randomBytes(24).toString('hex');
         await pool.query(
-            'INSERT INTO turnos (nombre, profesional, telefono, servicio, fecha, hora) VALUES (?, ?, ?, ?, ?, ?)',
-            [correo, profesional, telefono, servicio, fecha, hora]
+            'INSERT INTO turnos (nombre, profesional, telefono, servicio, fecha, hora, token) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [correo, profesional, telefono, servicio, fecha, hora, token]
         );
-        // Enviar email de confirmación
+        // Enviar email de confirmación con link de cancelación
+        const cancelUrl = `${process.env.BASE_URL || 'http://localhost:' + PORT}/cancelar/${token}`;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
             to: correo,
             subject: 'Confirmación de tu reserva en Beauty Club',
-            text: `¡Hola! Tu reserva fue agendada con éxito.\n\nServicio: ${servicio}\nFecha: ${fecha}\nHora: ${hora}\nTeléfono: ${telefono}\n\n¡Te esperamos en Beauty Club!`
+            text: `¡Hola! Tu reserva fue agendada con éxito.\n\nServicio: ${servicio}\nFecha: ${fecha}\nHora: ${hora}\nTeléfono: ${telefono}\n\n¿No puedes asistir? Cancela tu reserva aquí: ${cancelUrl}\n\n¡Te esperamos en Beauty Club!`
         });
         res.status(201).json({ mensaje: 'Turno agendado con éxito y correo enviado' });
     } catch (err) {
         res.status(500).json({ error: 'Error al agendar turno o enviar correo' });
     }
+});
+
+// Endpoint API para consultar reserva por token (usado por cancelar.js)
+app.get('/api/cancelar/:token', async (req, res) => {
+    const { token } = req.params;
+    try {
+        const [rows] = await pool.query('SELECT servicio, fecha, hora, profesional FROM turnos WHERE token = ?', [token]);
+        if (rows.length === 0) {
+            return res.json({ ok: false, mensaje: 'Reserva no encontrada o ya cancelada.' });
+        }
+        res.json({ ok: true, reserva: rows[0] });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al buscar la reserva.' });
+    }
+});
+
+// Endpoint API para cancelar reserva por token (usado por cancelar.js)
+app.post('/api/cancelar/:token', async (req, res) => {
+    const { token } = req.params;
+    try {
+        const [rows] = await pool.query('SELECT id FROM turnos WHERE token = ?', [token]);
+        if (rows.length === 0) {
+            return res.json({ ok: false, mensaje: 'Reserva no encontrada o ya cancelada.' });
+        }
+        await pool.query('DELETE FROM turnos WHERE token = ?', [token]);
+        res.json({ ok: true, mensaje: 'Tu reserva ha sido cancelada exitosamente.' });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al cancelar la reserva.' });
+    }
+});
+
+// Servir la página de cancelación amigable
+app.get('/cancelar/:token', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/cancelar/cancelar.html'));
 });
 
 // Ruta principal: servir index.html
