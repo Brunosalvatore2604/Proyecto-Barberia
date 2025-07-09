@@ -1,21 +1,17 @@
 const express = require('express');
-const cors = require('cors');
-const bodyParser = require('body-parser');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors());
-app.use(bodyParser.json());
+// Servir archivos estáticos desde la carpeta public
+app.use(express.static(path.join(__dirname, '../public')));
 
-// Rutas de la API
-const agendaRoutes = require('./agendaRoutes');
-app.use('/api/agenda', agendaRoutes);
-
+// Ruta principal: servir index.html
 app.get('/', (req, res) => {
-    res.send('API de Beauty Club funcionando');
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 app.listen(PORT, () => {
-    console.log(`Servidor API escuchando en puerto ${PORT}`);
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
