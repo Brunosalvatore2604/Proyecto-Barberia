@@ -26,6 +26,20 @@ async function cargarHorariosDisponibles() {
 }
 
 if (fechaInput && horaSelect) {
+    // Limitar el input de fecha a hoy + 6 días
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const minDate = `${yyyy}-${mm}-${dd}`;
+    hoy.setDate(hoy.getDate() + 6);
+    const maxyyyy = hoy.getFullYear();
+    const maxmm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const maxdd = String(hoy.getDate()).padStart(2, '0');
+    const maxDate = `${maxyyyy}-${maxmm}-${maxdd}`;
+    fechaInput.setAttribute('min', minDate);
+    fechaInput.setAttribute('max', maxDate);
+
     fechaInput.addEventListener('change', cargarHorariosDisponibles);
 }
 

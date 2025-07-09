@@ -62,6 +62,14 @@ app.post('/api/turnos', async (req, res) => {
         return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
     try {
+        // Verificar si el mail ya tiene una reserva en los próximos 6 días
+        const [reservas] = await pool.query(
+            `SELECT id FROM turnos WHERE nombre = ? AND fecha BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
+            [correo]
+        );
+        if (reservas.length > 0) {
+            return res.status(409).json({ error: 'Ya tienes una reserva en los próximos 6 días.' });
+        }
         // Verificar si el horario ya está ocupado
         const [rows] = await pool.query('SELECT id FROM turnos WHERE fecha = ? AND hora = ?', [fecha, hora]);
         if (rows.length > 0) {
