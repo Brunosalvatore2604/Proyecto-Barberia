@@ -40,10 +40,11 @@ transporter.verify(function(error, success) {
 // Al iniciar el server, asegurarse de que la columna profesional existe
 (async () => {
     try {
-        await pool.query("ALTER TABLE turnos ADD COLUMN IF NOT EXISTS profesional VARCHAR(30) NOT NULL DEFAULT 'Agustin' AFTER nombre");
-        console.log('Columna profesional verificada/creada');
+        // Intentar agregar la columna, si ya existe MySQL lanzará un error que ignoramos
+        await pool.query("ALTER TABLE turnos ADD COLUMN profesional VARCHAR(30) NOT NULL DEFAULT 'Agustin' AFTER nombre");
+        console.log('Columna profesional agregada');
     } catch (err) {
-        if (err.code === 'ER_DUP_FIELDNAME') {
+        if (err.code === 'ER_DUP_FIELDNAME' || (err.sqlMessage && err.sqlMessage.includes('Duplicate column name'))) {
             console.log('La columna profesional ya existe');
         } else {
             console.error('Error al verificar/crear columna profesional:', err);
