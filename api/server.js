@@ -97,7 +97,7 @@ app.post('/api/turnos', async (req, res) => {
             [correo, profesional, telefono, servicio, fecha, hora, token]
         );
         // Enviar email de confirmación con link de cancelación
-        const cancelUrl = `${process.env.BASE_URL || 'http://localhost:' + PORT}/cancelar/${token}`;
+        const cancelUrl = `${process.env.BASE_URL || 'https://proyecto-barberia-production.up.railway.app'}/cancelar/${token}`;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
             to: correo,
