@@ -28,6 +28,15 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Probar conexión de nodemailer al iniciar
+transporter.verify(function(error, success) {
+    if (error) {
+        console.error('Error al conectar con nodemailer:', error);
+    } else {
+        console.log('Nodemailer listo para enviar correos');
+    }
+});
+
 // Endpoint para obtener horarios disponibles de un día
 app.get('/api/horarios', async (req, res) => {
     const { fecha } = req.query;
