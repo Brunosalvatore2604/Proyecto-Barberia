@@ -3,6 +3,23 @@ const form = document.querySelector('.agenda-form');
 const mensaje = document.querySelector('.mensaje-exito');
 const fechaInput = document.getElementById('fecha');
 const horaSelect = document.getElementById('hora');
+const profesionalSelect = document.getElementById('profesional');
+const servicioSelect = document.getElementById('servicio');
+
+const serviciosPorProfesional = {
+    Agustin: [
+        'Corte de cabello',
+        'Afeitado/Barba',
+        'Platinado'
+    ],
+    Gabriela: [
+        'Peinado',
+        'Recorte',
+        'Brashing',
+        'Coloracion',
+        'Otro'
+    ]
+};
 
 async function cargarHorariosDisponibles() {
     const fecha = fechaInput.value;
@@ -43,11 +60,27 @@ if (fechaInput && horaSelect) {
     fechaInput.addEventListener('change', cargarHorariosDisponibles);
 }
 
+if (profesionalSelect && servicioSelect) {
+    profesionalSelect.addEventListener('change', function() {
+        const profesional = profesionalSelect.value;
+        servicioSelect.innerHTML = '<option value="">Selecciona un servicio</option>';
+        if (serviciosPorProfesional[profesional]) {
+            serviciosPorProfesional[profesional].forEach(servicio => {
+                const opt = document.createElement('option');
+                opt.value = servicio;
+                opt.textContent = servicio;
+                servicioSelect.appendChild(opt);
+            });
+        }
+    });
+}
+
 if (form && mensaje) {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const datos = {
             correo: form.correo.value,
+            profesional: form.profesional.value,
             telefono: form.telefono.value,
             servicio: form.servicio.value,
             fecha: form.fecha.value,

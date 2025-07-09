@@ -37,6 +37,20 @@ transporter.verify(function(error, success) {
     }
 });
 
+// Al iniciar el server, asegurarse de que la columna profesional existe
+(async () => {
+    try {
+        await pool.query("ALTER TABLE turnos ADD COLUMN IF NOT EXISTS profesional VARCHAR(30) NOT NULL DEFAULT 'Agustin' AFTER nombre");
+        console.log('Columna profesional verificada/creada');
+    } catch (err) {
+        if (err.code === 'ER_DUP_FIELDNAME') {
+            console.log('La columna profesional ya existe');
+        } else {
+            console.error('Error al verificar/crear columna profesional:', err);
+        }
+    }
+})();
+
 // Endpoint para obtener horarios disponibles de un día
 app.get('/api/horarios', async (req, res) => {
     const { fecha } = req.query;
@@ -57,7 +71,7 @@ app.get('/api/horarios', async (req, res) => {
 
 // Endpoint para agendar un turno
 app.post('/api/turnos', async (req, res) => {
-    const { correo, telefono, servicio, fecha, hora } = req.body;
+    const { correo, telefono, servicio, fecha, hora, profesional } = req.body;
     if (!correo || !telefono || !servicio || !fecha || !hora) {
         return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
@@ -76,8 +90,8 @@ app.post('/api/turnos', async (req, res) => {
             return res.status(409).json({ error: 'Ese horario ya está ocupado' });
         }
         await pool.query(
-            'INSERT INTO turnos (nombre, telefono, servicio, fecha, hora) VALUES (?, ?, ?, ?, ?)',
-            [correo, telefono, servicio, fecha, hora]
+            'INSERT INTO turnos (nombre, profesional, telefono, servicio, fecha, hora) VALUES (?, ?, ?, ?, ?, ?)',
+            [correo, profesional, telefono, servicio, fecha, hora]
         );
         // Enviar email de confirmación
         await transporter.sendMail({
