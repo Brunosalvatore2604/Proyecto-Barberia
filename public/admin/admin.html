@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin | Beauty Club</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Panel de Administración</h1>
+        <div id="login-section">
+            <input type="password" id="admin-pass" placeholder="Contraseña">
+            <button id="btn-login">Entrar</button>
+            <div id="login-msg"></div>
+        </div>
+        <div id="panel-section" style="display:none;">
+            <h2>Reservas</h2>
+            <div id="reservas-list">Cargando reservas...</div>
+        </div>
+    </div>
+    <script src="admin.js"></script>
+</body>
+</html>

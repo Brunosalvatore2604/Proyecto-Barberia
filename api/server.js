@@ -135,6 +135,32 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
+// Servir el panel de administración
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/admin/admin.html'));
+});
+
+// Endpoint API: listar reservas (admin)
+app.get('/api/admin/reservas', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora FROM turnos ORDER BY fecha, hora');
+        res.json({ ok: true, reservas: rows });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al consultar reservas' });
+    }
+});
+
+// Endpoint API: eliminar reserva (admin)
+app.delete('/api/admin/reservas/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM turnos WHERE id = ?', [id]);
+        res.json({ ok: true });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al eliminar reserva' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
