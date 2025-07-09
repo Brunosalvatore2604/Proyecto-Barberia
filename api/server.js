@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const pool = require('./db');
+const nodemailer = require('nodemailer');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -17,6 +18,15 @@ pool.getConnection()
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Configuración de nodemailer para Gmail
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'beautyclub.automatic@gmail.com',
+        pass: 'Brulu2019'
+    }
+});
 
 // Endpoint para obtener horarios disponibles de un día
 app.get('/api/horarios', async (req, res) => {
@@ -38,8 +48,8 @@ app.get('/api/horarios', async (req, res) => {
 
 // Endpoint para agendar un turno
 app.post('/api/turnos', async (req, res) => {
-    const { nombre, telefono, servicio, fecha, hora } = req.body;
-    if (!nombre || !telefono || !servicio || !fecha || !hora) {
+    const { correo, telefono, servicio, fecha, hora } = req.body;
+    if (!correo || !telefono || !servicio || !fecha || !hora) {
         return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
     try {
@@ -50,11 +60,18 @@ app.post('/api/turnos', async (req, res) => {
         }
         await pool.query(
             'INSERT INTO turnos (nombre, telefono, servicio, fecha, hora) VALUES (?, ?, ?, ?, ?)',
-            [nombre, telefono, servicio, fecha, hora]
+            [correo, telefono, servicio, fecha, hora]
         );
-        res.status(201).json({ mensaje: 'Turno agendado con éxito' });
+        // Enviar email de confirmación
+        await transporter.sendMail({
+            from: 'beautyclub.automatic@gmail.com',
+            to: correo,
+            subject: 'Confirmación de tu reserva en Beauty Club',
+            text: `¡Hola! Tu reserva fue agendada con éxito.\n\nServicio: ${servicio}\nFecha: ${fecha}\nHora: ${hora}\nTeléfono: ${telefono}\n\n¡Te esperamos en Beauty Club!`
+        });
+        res.status(201).json({ mensaje: 'Turno agendado con éxito y correo enviado' });
     } catch (err) {
-        res.status(500).json({ error: 'Error al agendar turno' });
+        res.status(500).json({ error: 'Error al agendar turno o enviar correo' });
     }
 });
 

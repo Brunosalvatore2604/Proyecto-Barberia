@@ -33,7 +33,7 @@ if (form && mensaje) {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const datos = {
-            nombre: form.nombre.value,
+            correo: form.correo.value,
             telefono: form.telefono.value,
             servicio: form.servicio.value,
             fecha: form.fecha.value,
