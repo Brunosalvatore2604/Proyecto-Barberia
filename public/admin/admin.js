@@ -18,6 +18,21 @@ btnLogin.onclick = () => {
     }
 };
 
+function formatFecha(fecha) {
+    // Recibe '2025-07-10T00:00:00.000Z' o '2025-07-10' y devuelve '10/07/2025'
+    if (!fecha) return '';
+    const d = new Date(fecha);
+    const dia = d.getUTCDate().toString().padStart(2, '0');
+    const mes = (d.getUTCMonth() + 1).toString().padStart(2, '0');
+    const anio = d.getUTCFullYear();
+    return `${dia}/${mes}/${anio}`;
+}
+function formatHora(hora) {
+    // Recibe '12:00:00' o '12:00' y devuelve '12:00'
+    if (!hora) return '';
+    return hora.slice(0,5);
+}
+
 async function cargarReservas() {
     reservasList.innerHTML = 'Cargando reservas...';
     const res = await fetch('/api/admin/reservas');
@@ -36,7 +51,7 @@ async function cargarReservas() {
         div.className = 'reserva-item';
         div.innerHTML = `
             <b>Servicio:</b> ${r.servicio}<br>
-            <b>Fecha:</b> ${r.fecha} <b>Hora:</b> ${r.hora}<br>
+            <b>Fecha:</b> ${formatFecha(r.fecha)} <b>Hora:</b> ${formatHora(r.hora)}<br>
             <b>Profesional:</b> ${r.profesional}<br>
             <b>Correo:</b> ${r.nombre}<br>
             <b>Teléfono:</b> ${r.telefono}<br>
