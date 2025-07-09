@@ -1,48 +1,93 @@
 body {
-    background: #f7f7fa;
-    font-family: 'Montserrat', Arial, sans-serif;
+    background: linear-gradient(120deg, #18171c 60%, #9B71B0 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
     min-height: 100vh;
+    color: #eee;
 }
 
 .cancelar-container {
     max-width: 400px;
     margin: 60px auto;
-    background: #fff;
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    background: #23232b;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(155,113,176,0.13);
     padding: 2.5em 2em 2em 2em;
     text-align: center;
+    animation: fadeInUp 1.2s 0.8s both;
+}
+
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(60px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 .cancelar-container h1 {
-    color: #b06ab3;
+    color: #BBA3D0;
     margin-bottom: 1em;
     font-size: 2em;
+    font-weight: 900;
+    letter-spacing: 2px;
 }
 
 #cancelar-content p, #cancelar-content h2 {
-    color: #444;
+    color: #eee;
     margin-bottom: 1.5em;
+    font-size: 1.1em;
 }
 
 .btn-cancelar {
-    background: #c00;
-    color: #fff;
+    background: linear-gradient(120deg, #9B71B0 60%, #BBA3D0 100%);
+    color: #222;
     border: none;
-    border-radius: 8px;
+    border-radius: 25px;
     padding: 1em 2em;
     font-size: 1.1em;
+    font-weight: 700;
+    letter-spacing: 1px;
     cursor: pointer;
-    transition: background 0.2s;
+    box-shadow: 0 2px 8px rgba(155,113,176,0.10);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 
 .btn-cancelar:hover {
-    background: #a00;
+    background: linear-gradient(120deg, #BBA3D0 60%, #9B71B0 100%);
+    color: #fff;
+    transform: scale(1.04);
 }
 
 .msg {
     margin-top: 1.5em;
-    color: #b06ab3;
+    color: #BBA3D0;
     font-weight: bold;
+    font-size: 1.1em;
+    animation: fadeIn 1s both;
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
+@media (max-width: 600px) {
+    .cancelar-container {
+        max-width: 98vw;
+        padding: 1.2em 0.7em 1.2em 0.7em;
+        border-radius: 12px;
+        margin: 1.2em 0.2em;
+    }
+    .cancelar-container h1 {
+        font-size: 1.3rem;
+    }
+    #cancelar-content p, #cancelar-content h2 {
+        font-size: 1rem;
+    }
+    .btn-cancelar {
+        font-size: 1rem;
+        padding: 0.7rem 1.2rem;
+        border-radius: 18px;
+    }
+    .msg {
+        font-size: 1rem;
+    }
 }
