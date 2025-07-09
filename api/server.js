@@ -1,19 +1,19 @@
 const express = require('express');
 const path = require('path');
-const { initDB } = require('./db');
+const pool = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Inicializar la base y tabla al levantar el server.js usando la función de db.js.
-let pool;
-
-initDB().then((p) => {
-    pool = p;
-    console.log('Base de datos y tabla listas');
-}).catch(err => {
-    console.error('Error inicializando la base de datos:', err);
-});
+// Probar conexión a la base de datos al iniciar
+pool.getConnection()
+    .then(conn => {
+        console.log('Conexión a MySQL establecida correctamente');
+        conn.release();
+    })
+    .catch(err => {
+        console.error('Error al conectar a MySQL:', err);
+    });
 
 // Servir archivos estáticos desde la carpeta public
 app.use(express.static(path.join(__dirname, '../public')));
