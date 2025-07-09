@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Configuración de nodemailer para Gmail
-const transporter = nodemailer.createTransporgitt({
+const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'beautyclub.automatic@gmail.com',
