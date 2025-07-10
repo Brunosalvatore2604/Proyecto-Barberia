@@ -316,6 +316,26 @@ footer {
     animation: fadeIn 1.5s 1.7s both;
 }
 
+.logo-header {
+    animation: logoPulse 2.5s infinite cubic-bezier(.4,0,.2,1);
+    transition: transform 0.2s;
+}
+
+.logo-header:hover {
+    transform: scale(1.08) rotate(-6deg);
+    filter: drop-shadow(0 0 16px #bba3d0cc);
+}
+
+@keyframes logoPulse {
+    0% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 #bba3d0); }
+    10% { transform: scale(1.08) rotate(-4deg); filter: drop-shadow(0 0 12px #bba3d0cc); }
+    20% { transform: scale(1.04) rotate(2deg); filter: drop-shadow(0 0 8px #bba3d0aa); }
+    30% { transform: scale(1.1) rotate(-3deg); filter: drop-shadow(0 0 16px #bba3d0cc); }
+    40% { transform: scale(1.06) rotate(2deg); }
+    50% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 #bba3d0); }
+    100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 #bba3d0); }
+}
+
 /* --- Responsive para móviles --- */
 @media (max-width: 600px) {
     header {

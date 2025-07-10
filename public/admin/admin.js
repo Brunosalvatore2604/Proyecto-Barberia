@@ -33,6 +33,22 @@ function formatHora(hora) {
     return hora.slice(0,5);
 }
 
+async function getHorasDisponibles(fecha, profesional, idReserva) {
+    // Trae los horarios disponibles para la fecha y profesional, pero incluye la hora actual de la reserva
+    const res = await fetch(`/api/horarios?fecha=${fecha}`);
+    const data = await res.json();
+    let horas = data.disponibles || [];
+    // Si estamos editando, incluir la hora actual aunque esté ocupada
+    if (idReserva) {
+        const reserva = window._reservasCache.find(r => r.id == idReserva);
+        if (reserva && reserva.fecha === fecha && !horas.includes(formatHora(reserva.hora))) {
+            horas.push(formatHora(reserva.hora));
+            horas = horas.sort();
+        }
+    }
+    return horas;
+}
+
 async function cargarReservas() {
     reservasList.innerHTML = 'Cargando reservas...';
     const res = await fetch('/api/admin/reservas');
@@ -46,12 +62,14 @@ async function cargarReservas() {
         return;
     }
     reservasList.innerHTML = '';
+    window._reservasCache = data.reservas;
     data.reservas.forEach(r => {
         const div = document.createElement('div');
         div.className = 'reserva-item';
+        div.id = `reserva-${r.id}`;
         div.innerHTML = `
             <b>Servicio:</b> ${r.servicio}<br>
-            <b>Fecha:</b> ${formatFecha(r.fecha)} <b>Hora:</b> ${formatHora(r.hora)}<br>
+            <b>Fecha:</b> <span class="fecha-label">${formatFecha(r.fecha)}</span> <b>Hora:</b> <span class="hora-label">${formatHora(r.hora)}</span><br>
             <b>Profesional:</b> ${r.profesional}<br>
             <b>Correo:</b> ${r.nombre}<br>
             <b>Teléfono:</b> ${r.telefono}<br>
@@ -59,13 +77,66 @@ async function cargarReservas() {
                 <button class="btn-editar" onclick="editarReserva('${r.id}')">Editar</button>
                 <button class="btn-eliminar" onclick="eliminarReserva('${r.id}')">Eliminar</button>
             </div>
+            <div class="editar-form" style="display:none;margin-top:1em;"></div>
         `;
         reservasList.appendChild(div);
     });
 }
 
-window.editarReserva = function(id) {
-    alert('Funcionalidad de edición próximamente.');
+window.editarReserva = async function(id) {
+    const div = document.getElementById(`reserva-${id}`);
+    const reserva = window._reservasCache.find(r => r.id == id);
+    if (!div || !reserva) return;
+    const formDiv = div.querySelector('.editar-form');
+    // Mostrar formulario de edición
+    formDiv.style.display = 'block';
+    formDiv.innerHTML = `
+        <form onsubmit="return false;" style="display:flex;flex-wrap:wrap;gap:0.5em;align-items:center;justify-content:center;">
+            <input type="date" id="edit-fecha-${id}" value="${reserva.fecha.slice(0,10)}" min="${new Date().toISOString().slice(0,10)}" style="padding:0.3em 0.7em;border-radius:8px;border:1px solid #BBA3D0;">
+            <select id="edit-hora-${id}" style="padding:0.3em 0.7em;border-radius:8px;border:1px solid #BBA3D0;"></select>
+            <button type="button" class="btn-editar" onclick="guardarEdicionReserva('${id}')">Guardar</button>
+            <button type="button" class="btn-eliminar" onclick="cancelarEdicionReserva('${id}')">Cancelar</button>
+        </form>
+        <div class="editar-msg" style="margin-top:0.5em;color:#BBA3D0;"></div>
+    `;
+    // Cargar horas disponibles para la fecha actual
+    const horaSelect = formDiv.querySelector(`#edit-hora-${id}`);
+    const cargarHoras = async () => {
+        const fecha = formDiv.querySelector(`#edit-fecha-${id}`).value;
+        const horas = await getHorasDisponibles(fecha, reserva.profesional, id);
+        horaSelect.innerHTML = horas.map(h => `<option value="${h}" ${h===formatHora(reserva.hora)?'selected':''}>${h}</option>`).join('');
+    };
+    await cargarHoras();
+    formDiv.querySelector(`#edit-fecha-${id}`).addEventListener('change', cargarHoras);
+};
+
+window.cancelarEdicionReserva = function(id) {
+    const div = document.getElementById(`reserva-${id}`);
+    if (!div) return;
+    const formDiv = div.querySelector('.editar-form');
+    formDiv.style.display = 'none';
+    formDiv.innerHTML = '';
+};
+
+window.guardarEdicionReserva = async function(id) {
+    const div = document.getElementById(`reserva-${id}`);
+    const formDiv = div.querySelector('.editar-form');
+    const fecha = formDiv.querySelector(`#edit-fecha-${id}`).value;
+    const hora = formDiv.querySelector(`#edit-hora-${id}`).value;
+    const msgDiv = formDiv.querySelector('.editar-msg');
+    msgDiv.textContent = 'Guardando...';
+    const res = await fetch(`/api/admin/reservas/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fecha, hora })
+    });
+    const data = await res.json();
+    if (data.ok) {
+        msgDiv.textContent = 'Reserva actualizada';
+        setTimeout(() => { cargarReservas(); }, 800);
+    } else {
+        msgDiv.textContent = data.mensaje || 'Error al actualizar';
+    }
 };
 
 window.eliminarReserva = async function(id) {

@@ -161,6 +161,26 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
     }
 });
 
+// Endpoint API: editar reserva (admin)
+app.put('/api/admin/reservas/:id', async (req, res) => {
+    const { id } = req.params;
+    const { fecha, hora } = req.body;
+    if (!fecha || !hora) {
+        return res.json({ ok: false, mensaje: 'Fecha y hora requeridas' });
+    }
+    try {
+        // Verificar si el horario ya está ocupado por otra reserva
+        const [rows] = await pool.query('SELECT id FROM turnos WHERE fecha = ? AND hora = ? AND id != ?', [fecha, hora, id]);
+        if (rows.length > 0) {
+            return res.json({ ok: false, mensaje: 'Ese horario ya está ocupado' });
+        }
+        await pool.query('UPDATE turnos SET fecha = ?, hora = ? WHERE id = ?', [fecha, hora, id]);
+        res.json({ ok: true });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al actualizar reserva' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
