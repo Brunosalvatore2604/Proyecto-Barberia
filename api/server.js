@@ -90,6 +90,37 @@ app.post('/api/turnos', async (req, res) => {
             subject: 'Confirmación de tu reserva en Beauty Club',
             text: `¡Hola! Tu reserva fue agendada con éxito.\n\nServicio: ${servicio}\nFecha: ${fecha}\nHora: ${hora}\nTeléfono: ${telefono}\n\n¿No puedes asistir? Cancela tu reserva aquí: ${cancelUrl}\n\n¡Te esperamos en Beauty Club!`
         });
+
+        // Enviar agenda de reservas pendientes al admin
+        const [pendientes] = await pool.query("SELECT nombre, profesional, telefono, servicio, fecha, hora FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora");
+        const agendaHtml = `
+            <h2>Agenda de reservas pendientes</h2>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
+                <thead style="background:#BBA3D0;color:#23232b;">
+                    <tr>
+                        <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pendientes.map(r => `
+                        <tr>
+                            <td>${r.fecha instanceof Date ? r.fecha.toISOString().slice(0,10) : r.fecha}</td>
+                            <td>${r.hora.slice(0,5)}</td>
+                            <td>${r.profesional}</td>
+                            <td>${r.servicio}</td>
+                            <td>${r.nombre}</td>
+                            <td>${r.telefono}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        await transporter.sendMail({
+            from: 'beautyclub.automatic@gmail.com',
+            to: 'beautyclub.automatic@gmail.com', // Cambia aquí por el correo real del admin si lo deseas
+            subject: 'Nueva reserva - Agenda actualizada',
+            html: agendaHtml
+        });
         res.status(201).json({ mensaje: 'Turno agendado con éxito y correo enviado' });
     } catch (err) {
         res.status(500).json({ error: 'Error al agendar turno o enviar correo' });
