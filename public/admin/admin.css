@@ -180,7 +180,7 @@ body {
     .admin-container, #solicitudes-section {
         max-width: 98vw;
         margin: 20px 1vw 0 1vw;
-        padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+        padding: 1.2rem 0.2rem 1.2rem 0.2rem;
         border-radius: 12px;
     }
     .admin-toggle {
@@ -190,5 +190,22 @@ body {
     #solicitudes-table th, #solicitudes-table td {
         font-size: 0.95em;
         padding: 0.5em 0.2em;
+        word-break: break-word;
+        max-width: 90px;
+    }
+    #solicitudes-table {
+        display: block;
+        overflow-x: auto;
+        width: 100%;
+    }
+    #solicitudes-table thead, #solicitudes-table tbody, #solicitudes-table tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+    .btn-aceptar, .btn-rechazar {
+        padding: 0.5em 0.5em;
+        font-size: 0.95em;
+        min-width: 70px;
     }
 }
