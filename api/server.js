@@ -280,6 +280,17 @@ app.post('/api/inscribirse', async (req, res) => {
     }
     try {
         await pool.query('INSERT INTO personas (nombre, gmail) VALUES (?, ?)', [nombre, gmail]);
+        // Enviar correo al admin con los datos del aspirante y link al admin
+        const adminUrl = `${process.env.BASE_URL || 'https://proyecto-barberia-production.up.railway.app'}/admin`;
+        await transporter.sendMail({
+            from: 'beautyclub.automatic@gmail.com',
+            to: 'beautyclub.automatic@gmail.com',
+            subject: 'Nueva solicitud de inscripción - Beauty Club',
+            html: `<h2>Nueva solicitud de inscripción</h2>
+                <p><b>Nombre:</b> ${nombre}</p>
+                <p><b>Gmail:</b> ${gmail}</p>
+                <p>Para validar o rechazar esta solicitud, ingresa al <a href="${adminUrl}">panel de administración</a>.</p>`
+        });
         res.status(201).json({ mensaje: 'Inscripción exitosa' });
     } catch (err) {
         if (err.code === 'ER_DUP_ENTRY') {
