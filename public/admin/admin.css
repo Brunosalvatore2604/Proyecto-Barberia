@@ -140,6 +140,14 @@ body {
     border-collapse: collapse;
     margin-top: 1em;
     color: #eee;
+    /* Por defecto no scroll, solo en mobile */
+    display: table;
+    overflow-x: unset;
+}
+#solicitudes-table thead, #solicitudes-table tbody, #solicitudes-table tr {
+    display: table-row-group;
+    width: auto;
+    table-layout: auto;
 }
 #solicitudes-table th, #solicitudes-table td {
     padding: 0.7em 0.5em;
