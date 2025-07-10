@@ -376,6 +376,18 @@ app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
     const { id } = req.params;
     try {
         await pool.query('UPDATE personas SET validado = TRUE WHERE id = ?', [id]);
+        // Obtener datos del usuario validado
+        const [rows] = await pool.query('SELECT nombre, gmail FROM personas WHERE id = ?', [id]);
+        if (rows.length > 0) {
+            const { nombre, gmail } = rows[0];
+            // Enviar email de notificación
+            await transporter.sendMail({
+                from: 'beautyclub.automatic@gmail.com',
+                to: gmail,
+                subject: '¡Ya puedes reservar en Beauty Club!',
+                text: `Hola ${nombre},\n\nTu inscripción ha sido validada. Ya puedes reservar tu turno en Beauty Club.\n\nIngresa a https://proyecto-barberia-production.up.railway.app/ para agendar tu cita.\n\n¡Te esperamos!` 
+            });
+        }
         res.json({ ok: true });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al validar persona' });
@@ -392,6 +404,46 @@ app.delete('/api/admin/solicitudes/:id/rechazar', async (req, res) => {
         res.json({ ok: false, mensaje: 'Error al eliminar solicitud' });
     }
 });
+
+// --- JOB: Recordatorio de turnos 24h antes ---
+function enviarRecordatoriosTurnos() {
+    const ahora = new Date();
+    // Calcular la fecha de mañana (YYYY-MM-DD)
+    const manana = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate() + 1);
+    const yyyy = manana.getFullYear();
+    const mm = String(manana.getMonth() + 1).padStart(2, '0');
+    const dd = String(manana.getDate()).padStart(2, '0');
+    const fechaManana = `${yyyy}-${mm}-${dd}`;
+    pool.query('SELECT nombre, profesional, servicio, fecha, hora, telefono FROM turnos WHERE fecha = ?', [fechaManana])
+        .then(async ([turnos]) => {
+            for (const t of turnos) {
+                await transporter.sendMail({
+                    from: 'beautyclub.automatic@gmail.com',
+                    to: t.nombre, // nombre = correo
+                    subject: 'Recordatorio de tu turno en Beauty Club',
+                    text: `Hola!\n\nTe recordamos que tienes un turno reservado para mañana en Beauty Club.\n\nServicio: ${t.servicio}\nProfesional: ${t.profesional}\nFecha: ${t.fecha}\nHora: ${t.hora.slice(0,5)}\nTeléfono: ${t.telefono}\n\nSi no puedes asistir, por favor cancela tu turno desde el enlace de confirmación.\n\n¡Te esperamos!`
+                });
+            }
+            if (turnos.length > 0) {
+                console.log(`Recordatorios enviados para ${turnos.length} turnos del ${fechaManana}`);
+            }
+        })
+        .catch(err => {
+            console.error('Error enviando recordatorios de turnos:', err);
+        });
+}
+// Ejecutar todos los días a las 8:00 AM (servidor)
+function programarRecordatorios() {
+    const ahora = new Date();
+    const proxima = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 8, 0, 0, 0);
+    if (ahora > proxima) proxima.setDate(proxima.getDate() + 1);
+    const msHastaProxima = proxima - ahora;
+    setTimeout(() => {
+        enviarRecordatoriosTurnos();
+        setInterval(enviarRecordatoriosTurnos, 24 * 60 * 60 * 1000); // Cada 24h
+    }, msHastaProxima);
+}
+programarRecordatorios();
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
