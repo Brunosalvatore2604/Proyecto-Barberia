@@ -71,29 +71,20 @@
 
 /* --- Responsive para móviles --- */
 @media (max-width: 600px) {
-    .agenda-section {
-        max-width: 98vw;
-        padding: 1.2em 0.7em 1.2em 0.7em;
-        border-radius: 12px;
-        margin: 1.2em 0.2em;
+    body {
+        padding: 0;
     }
-    .agenda-section h2 {
-        font-size: 1.3rem;
+    .agenda-container {
+        max-width: 98vw;
+        margin: 20px 1vw 0 1vw;
+        padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+        border-radius: 12px;
     }
     .agenda-form {
         gap: 0.7rem;
     }
-    .agenda-form label {
-        font-size: 0.98rem;
-    }
-    .agenda-form input, .agenda-form select {
-        font-size: 0.98rem;
-        padding: 0.5rem 0.7rem;
-    }
-    .agenda-form button {
+    .agenda-form label, .agenda-form input, .agenda-form select, .agenda-form button {
         font-size: 1rem;
-        padding: 0.7rem 1.2rem;
-        border-radius: 18px;
     }
     .mensaje-exito {
         font-size: 1rem;

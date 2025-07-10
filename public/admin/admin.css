@@ -175,3 +175,20 @@ body {
 .btn-rechazar:hover {
     background: #b71c1c;
 }
+
+@media (max-width: 600px) {
+    .admin-container, #solicitudes-section {
+        max-width: 98vw;
+        margin: 20px 1vw 0 1vw;
+        padding: 1.2rem 0.5rem 1.2rem 0.5rem;
+        border-radius: 12px;
+    }
+    .admin-toggle {
+        flex-direction: column;
+        gap: 0.7rem;
+    }
+    #solicitudes-table th, #solicitudes-table td {
+        font-size: 0.95em;
+        padding: 0.5em 0.2em;
+    }
+}
