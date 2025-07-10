@@ -21,22 +21,32 @@ const serviciosPorProfesional = {
     ]
 };
 
+const HORARIOS_FALLBACK = [
+    '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+    '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
+    '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
+];
+
 async function cargarHorariosDisponibles() {
     const fecha = fechaInput.value;
-    if (!fecha) return;
-    horaSelect.innerHTML = '<option value="">Cargando...</option>';
+    const profesional = profesionalSelect ? profesionalSelect.value : '';
+    if (!fecha || !profesional) return;
+    horaSelect.innerHTML = '<option value="Cargando...">Cargando...</option>';
     try {
-        const res = await fetch(`/api/horarios?fecha=${fecha}`);
+        const res = await fetch(`/api/horarios?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}`);
         const data = await res.json();
         horaSelect.innerHTML = '<option value="">Selecciona una hora</option>';
-        if (data.disponibles) {
-            data.disponibles.forEach(hora => {
-                const opt = document.createElement('option');
-                opt.value = hora;
-                opt.textContent = hora;
-                horaSelect.appendChild(opt);
-            });
+        let horarios = data.disponibles;
+        if (!horarios || horarios.length === 0) {
+            horarios = HORARIOS_FALLBACK;
         }
+        horarios.forEach(hora => {
+            const opt = document.createElement('option');
+            opt.value = hora;
+            opt.textContent = hora;
+            horaSelect.appendChild(opt);
+        });
     } catch (err) {
         horaSelect.innerHTML = '<option value="">Error al cargar horarios</option>';
     }
@@ -72,6 +82,8 @@ if (profesionalSelect && servicioSelect) {
                 servicioSelect.appendChild(opt);
             });
         }
+        // Al cambiar el profesional, recargar horarios disponibles si ya hay fecha seleccionada
+        if (fechaInput.value) cargarHorariosDisponibles();
     });
 }
 
