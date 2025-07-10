@@ -35,7 +35,7 @@ function formatHora(hora) {
 
 async function getHorasDisponibles(fecha, profesional, idReserva) {
     // Trae los horarios disponibles para la fecha y profesional, pero incluye la hora actual de la reserva
-    const res = await fetch(`/api/horarios?fecha=${fecha}`);
+    const res = await fetch(`/api/horarios?fecha=${fecha}&profesional=${encodeURIComponent(profesional)}`);
     const data = await res.json();
     let horas = data.disponibles || [];
     // Si estamos editando, incluir la hora actual aunque esté ocupada
