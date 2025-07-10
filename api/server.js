@@ -17,6 +17,19 @@ pool.getConnection()
         console.error('Error al conectar a MySQL:', err);
     });
 
+// Crear tabla personas si no existe al iniciar el servidor
+pool.query(`CREATE TABLE IF NOT EXISTS personas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    gmail VARCHAR(100) NOT NULL UNIQUE
+)`)
+.then(() => {
+    console.log('Tabla personas verificada/creada');
+})
+.catch(err => {
+    console.error('Error creando/verificando tabla personas:', err);
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
