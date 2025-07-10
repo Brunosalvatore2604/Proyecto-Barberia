@@ -149,10 +149,19 @@ body {
     width: auto;
     table-layout: auto;
 }
+#solicitudes-table tr {
+    display: table-row;
+}
 #solicitudes-table th, #solicitudes-table td {
+    width: 25%;
+    min-width: 80px;
+    max-width: 200px;
+    box-sizing: border-box;
+    text-align: center;
+    vertical-align: middle;
+    word-break: break-word;
     padding: 0.7em 0.5em;
     border-bottom: 1px solid #bba3d055;
-    text-align: center;
 }
 #solicitudes-table th {
     background: #292933;
