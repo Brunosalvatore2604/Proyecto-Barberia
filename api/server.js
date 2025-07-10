@@ -22,15 +22,16 @@ pool.query(`CREATE TABLE IF NOT EXISTS personas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     gmail VARCHAR(100) NOT NULL UNIQUE
-)`)
-.then(() => {
-    // Intentar agregar la columna 'validado' si no existe
-    return pool.query(`ALTER TABLE personas ADD COLUMN IF NOT EXISTS validado BOOLEAN DEFAULT FALSE`);
-})
-.then(() => {
-    console.log('Tabla personas verificada/columna validado asegurada');
-})
-.catch(err => {
+)`).then(async () => {
+    // Verificar si la columna 'validado' existe
+    const [cols] = await pool.query(`SHOW COLUMNS FROM personas LIKE 'validado'`);
+    if (cols.length === 0) {
+        await pool.query(`ALTER TABLE personas ADD COLUMN validado BOOLEAN DEFAULT FALSE`);
+        console.log("Columna 'validado' agregada a personas");
+    } else {
+        console.log("Columna 'validado' ya existe en personas");
+    }
+}).catch(err => {
     console.error('Error creando/verificando tabla personas:', err);
 });
 
