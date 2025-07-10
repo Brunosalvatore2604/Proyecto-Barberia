@@ -1,26 +1,37 @@
 body {
-    background: #f7f5fa;
-    font-family: 'Montserrat', Arial, sans-serif;
+    background: linear-gradient(120deg, #18171c 60%, #9B71B0 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
     margin: 0;
     min-height: 100vh;
+    color: #eee;
 }
+
 .inscribirse-container {
     max-width: 400px;
     margin: 60px auto 0 auto;
-    background: #fff;
+    background: #23232b;
     border-radius: 18px;
-    box-shadow: 0 4px 24px #bba3d055;
+    box-shadow: 0 4px 24px rgba(155,113,176,0.13);
     padding: 2.5rem 2rem 2rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: center;
+    color: #eee;
+    animation: fadeInUp 1.2s 0.8s both;
 }
+
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(60px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
 .inscribirse-container h1 {
-    color: #7c4dff;
+    color: #BBA3D0;
     margin-bottom: 1.5rem;
     font-size: 2rem;
     letter-spacing: 1px;
 }
+
 .inscribirse-form {
     width: 100%;
     display: flex;
@@ -29,7 +40,7 @@ body {
 }
 .inscribirse-form label {
     font-weight: 600;
-    color: #23232b;
+    color: #eee;
 }
 .inscribirse-form input {
     padding: 0.7rem 1rem;
@@ -37,14 +48,16 @@ body {
     border-radius: 8px;
     font-size: 1rem;
     outline: none;
+    background: #292933;
+    color: #fff;
     transition: border 0.2s;
 }
 .inscribirse-form input:focus {
     border: 1.5px solid #7c4dff;
 }
 .inscribirse-form button {
-    background: linear-gradient(90deg, #bba3d0 0%, #7c4dff 100%);
-    color: #fff;
+    background: linear-gradient(120deg, #9B71B0 60%, #BBA3D0 100%);
+    color: #23232b;
     border: none;
     border-radius: 8px;
     padding: 0.8rem 0;
@@ -52,10 +65,11 @@ body {
     font-weight: 700;
     cursor: pointer;
     margin-top: 0.5rem;
-    transition: background 0.2s;
+    transition: background 0.2s, color 0.2s;
 }
 .inscribirse-form button:hover {
-    background: linear-gradient(90deg, #7c4dff 0%, #bba3d0 100%);
+    background: linear-gradient(120deg, #BBA3D0 60%, #9B71B0 100%);
+    color: #fff;
 }
 .mensaje-exito {
     margin-top: 1.2rem;
@@ -66,12 +80,12 @@ body {
 }
 .volver {
     margin-top: 2rem;
-    color: #7c4dff;
+    color: #BBA3D0;
     text-decoration: none;
     font-weight: 600;
     font-size: 1rem;
     transition: color 0.2s;
 }
 .volver:hover {
-    color: #bba3d0;
+    color: #9B71B0;
 }
