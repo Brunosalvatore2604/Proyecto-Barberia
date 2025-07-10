@@ -89,8 +89,8 @@ app.post('/api/turnos', async (req, res) => {
         const [personas] = await pool.query('SELECT validado FROM personas WHERE gmail = ?', [correo]);
         if (personas.length === 0 || !personas[0].validado) {
             return res.status(403).json({ error: 'No estás inscripto o validado. Por favor, inscríbete primero.' });
-        }
-        // Verificar si el mail ya tiene una reserva en los próximos 6 días
+        } 
+        // Verifica si el mail ya tiene una reserva en los próximos 6 días
         const [reservas] = await pool.query(
             `SELECT id FROM turnos WHERE nombre = ? AND fecha BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
             [correo]
