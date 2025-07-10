@@ -75,8 +75,8 @@ app.post('/api/turnos', async (req, res) => {
         if (reservas.length > 0) {
             return res.status(409).json({ error: 'Ya tienes una reserva en los próximos 6 días.' });
         }
-        // Verificar si el horario ya está ocupado
-        const [rows] = await pool.query('SELECT id FROM turnos WHERE fecha = ? AND hora = ?', [fecha, hora]);
+        // Verificar si el horario ya está ocupado para ese profesional
+        const [rows] = await pool.query('SELECT id FROM turnos WHERE fecha = ? AND hora = ? AND profesional = ?', [fecha, hora, profesional]);
         if (rows.length > 0) {
             return res.status(409).json({ error: 'Ese horario ya está ocupado' });
         }
