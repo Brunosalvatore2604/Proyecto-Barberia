@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscribirse - Beauty Club</title>
+    <link rel="stylesheet" href="inscribirse.css">
+</head>
+<body>
+    <div class="inscribirse-container">
+        <h1>Inscribirse en Beauty Club</h1>
+        <form class="inscribirse-form">
+            <label for="nombre">Nombre completo</label>
+            <input type="text" id="nombre" name="nombre" required maxlength="100">
+            <label for="gmail">Correo Gmail</label>
+            <input type="email" id="gmail" name="gmail" required maxlength="100" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$">
+            <button type="submit">Inscribirse</button>
+        </form>
+        <div class="mensaje-exito"></div>
+        <a href="/" class="volver">← Volver al inicio</a>
+    </div>
+    <script src="inscribirse.js"></script>
+</body>
+</html>

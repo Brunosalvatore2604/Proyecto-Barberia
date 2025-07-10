@@ -17,14 +17,18 @@ pool.getConnection()
         console.error('Error al conectar a MySQL:', err);
     });
 
-// Crear tabla personas si no existe al iniciar el servidor
+// Crear tabla personas si no existe y asegurar columna 'validado'
 pool.query(`CREATE TABLE IF NOT EXISTS personas (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     gmail VARCHAR(100) NOT NULL UNIQUE
 )`)
 .then(() => {
-    console.log('Tabla personas verificada/creada');
+    // Intentar agregar la columna 'validado' si no existe
+    return pool.query(`ALTER TABLE personas ADD COLUMN IF NOT EXISTS validado BOOLEAN DEFAULT FALSE`);
+})
+.then(() => {
+    console.log('Tabla personas verificada/columna validado asegurada');
 })
 .catch(err => {
     console.error('Error creando/verificando tabla personas:', err);
@@ -256,6 +260,27 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
         res.json({ ok: true });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al actualizar reserva' });
+    }
+});
+
+// Endpoint para inscribirse
+app.post('/api/inscribirse', async (req, res) => {
+    const { nombre, gmail } = req.body;
+    if (!nombre || !gmail) {
+        return res.status(400).json({ error: 'Nombre y correo Gmail son obligatorios' });
+    }
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(gmail)) {
+        return res.status(400).json({ error: 'El correo debe ser de Gmail' });
+    }
+    try {
+        await pool.query('INSERT INTO personas (nombre, gmail) VALUES (?, ?)', [nombre, gmail]);
+        res.status(201).json({ mensaje: 'Inscripción exitosa' });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            res.status(409).json({ error: 'Ese correo ya está inscrito' });
+        } else {
+            res.status(500).json({ error: 'Error al inscribirse' });
+        }
     }
 });
 
