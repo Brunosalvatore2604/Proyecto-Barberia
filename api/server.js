@@ -243,6 +243,36 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
     const { id } = req.params;
     try {
         await pool.query('DELETE FROM turnos WHERE id = ?', [id]);
+        // Enviar agenda de reservas pendientes al admin tras eliminar
+        const [pendientes] = await pool.query("SELECT nombre, profesional, telefono, servicio, fecha, hora FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora");
+        const agendaHtml = `
+            <h2>Agenda de reservas pendientes</h2>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
+                <thead style="background:#BBA3D0;color:#23232b;">
+                    <tr>
+                        <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pendientes.map(r => `
+                        <tr>
+                            <td>${r.fecha instanceof Date ? r.fecha.toISOString().slice(0,10) : r.fecha}</td>
+                            <td>${r.hora.slice(0,5)}</td>
+                            <td>${r.profesional}</td>
+                            <td>${r.servicio}</td>
+                            <td>${r.nombre}</td>
+                            <td>${r.telefono}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        await transporter.sendMail({
+            from: 'beautyclub.automatic@gmail.com',
+            to: 'beautyclub.automatic@gmail.com',
+            subject: 'Reserva eliminada - Agenda actualizada',
+            html: agendaHtml
+        });
         res.json({ ok: true });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al eliminar reserva' });
@@ -263,6 +293,36 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
             return res.json({ ok: false, mensaje: 'Ese horario ya está ocupado' });
         }
         await pool.query('UPDATE turnos SET fecha = ?, hora = ? WHERE id = ?', [fecha, hora, id]);
+        // Enviar agenda de reservas pendientes al admin tras editar
+        const [pendientes] = await pool.query("SELECT nombre, profesional, telefono, servicio, fecha, hora FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora");
+        const agendaHtml = `
+            <h2>Agenda de reservas pendientes</h2>
+            <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
+                <thead style="background:#BBA3D0;color:#23232b;">
+                    <tr>
+                        <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${pendientes.map(r => `
+                        <tr>
+                            <td>${r.fecha instanceof Date ? r.fecha.toISOString().slice(0,10) : r.fecha}</td>
+                            <td>${r.hora.slice(0,5)}</td>
+                            <td>${r.profesional}</td>
+                            <td>${r.servicio}</td>
+                            <td>${r.nombre}</td>
+                            <td>${r.telefono}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        await transporter.sendMail({
+            from: 'beautyclub.automatic@gmail.com',
+            to: 'beautyclub.automatic@gmail.com',
+            subject: 'Reserva editada - Agenda actualizada',
+            html: agendaHtml
+        });
         res.json({ ok: true });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al actualizar reserva' });
