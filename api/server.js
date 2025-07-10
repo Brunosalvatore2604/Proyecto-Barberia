@@ -85,6 +85,11 @@ app.post('/api/turnos', async (req, res) => {
         return res.status(400).json({ error: 'Faltan datos obligatorios' });
     }
     try {
+        // Verificar si el mail está inscripto y validado
+        const [personas] = await pool.query('SELECT validado FROM personas WHERE gmail = ?', [correo]);
+        if (personas.length === 0 || !personas[0].validado) {
+            return res.status(403).json({ error: 'No estás inscripto o validado. Por favor, inscríbete primero.' });
+        }
         // Verificar si el mail ya tiene una reserva en los próximos 6 días
         const [reservas] = await pool.query(
             `SELECT id FROM turnos WHERE nombre = ? AND fecha BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
