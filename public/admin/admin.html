@@ -15,10 +15,33 @@
             <div id="login-msg"></div>
         </div>
         <div id="panel-section" style="display:none;">
-            <h2>Reservas</h2>
-            <div id="reservas-list">Cargando reservas...</div>
+            <div class="admin-toggle">
+                <button id="btn-reservas" class="active">Reservas</button>
+                <button id="btn-solicitudes">Solicitudes</button>
+            </div>
+            <section id="reservas-section">
+                <h2>Reservas</h2>
+                <div id="reservas-list">Cargando reservas...</div>
+            </section>
+            <section id="solicitudes-section" style="display:none;">
+                <h2>Solicitudes de Inscripción</h2>
+                <table id="solicitudes-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Gmail</th>
+                            <th>Validado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- JS -->
+                    </tbody>
+                </table>
+            </section>
         </div>
     </div>
     <script src="admin.js"></script>
+    <script src="solicitudes.js"></script>
 </body>
 </html>

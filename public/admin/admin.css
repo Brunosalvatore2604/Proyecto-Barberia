@@ -103,3 +103,75 @@ body {
     color: #fff;
     transform: scale(1.04);
 }
+.admin-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+.admin-toggle button {
+    background: linear-gradient(120deg, #9B71B0 60%, #BBA3D0 100%);
+    color: #23232b;
+    border: none;
+    border-radius: 25px;
+    padding: 0.7em 1.5em;
+    font-size: 1.1em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(155,113,176,0.10);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+.admin-toggle button.active {
+    background: #23232b;
+    color: #BBA3D0;
+    border: 2px solid #BBA3D0;
+}
+#solicitudes-section {
+    background: #23232b;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(155,113,176,0.13);
+    padding: 2em 1em 1.5em 1em;
+    margin-bottom: 2em;
+    animation: fadeInUp 1.2s 0.8s both;
+}
+#solicitudes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+    color: #eee;
+}
+#solicitudes-table th, #solicitudes-table td {
+    padding: 0.7em 0.5em;
+    border-bottom: 1px solid #bba3d055;
+    text-align: center;
+}
+#solicitudes-table th {
+    background: #292933;
+    color: #BBA3D0;
+    font-weight: 700;
+}
+.btn-aceptar, .btn-rechazar {
+    border: none;
+    border-radius: 8px;
+    padding: 0.5em 1em;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 0 0.2em;
+    font-size: 1em;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-aceptar {
+    background: #43a047;
+    color: #fff;
+}
+.btn-aceptar:hover {
+    background: #388e3c;
+}
+.btn-rechazar {
+    background: #e53935;
+    color: #fff;
+}
+.btn-rechazar:hover {
+    background: #b71c1c;
+}

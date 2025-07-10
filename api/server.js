@@ -285,6 +285,38 @@ app.post('/api/inscribirse', async (req, res) => {
     }
 });
 
+// Endpoint para listar solicitudes de inscripción (solo no validadas)
+app.get('/api/admin/solicitudes', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, nombre, gmail, validado FROM personas WHERE validado = FALSE ORDER BY id DESC');
+        res.json({ ok: true, solicitudes: rows });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al consultar solicitudes' });
+    }
+});
+
+// Endpoint para aceptar solicitud (validar persona)
+app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('UPDATE personas SET validado = TRUE WHERE id = ?', [id]);
+        res.json({ ok: true });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al validar persona' });
+    }
+});
+
+// Endpoint para rechazar solicitud (eliminar persona)
+app.delete('/api/admin/solicitudes/:id/rechazar', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM personas WHERE id = ?', [id]);
+        res.json({ ok: true });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al eliminar solicitud' });
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
