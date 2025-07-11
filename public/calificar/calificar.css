@@ -1,0 +1,72 @@
+body {
+    background: linear-gradient(120deg, #18171c 60%, #9B71B0 100%);
+    font-family: 'Segoe UI', Arial, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    color: #eee;
+}
+
+.calificar-box {
+    max-width: 400px;
+    margin: 60px auto;
+    background: #23232b;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(155,113,176,0.13);
+    padding: 2.5em 2em 2em 2em;
+    text-align: center;
+    animation: fadeInUp 1.2s 0.8s both;
+}
+
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(60px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.calificar-box h2 {
+    color: #BBA3D0;
+    margin-bottom: 1em;
+    font-size: 2em;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.estrellas {
+    display: flex;
+    justify-content: center;
+    gap: 0.3em;
+    margin: 1em 0;
+}
+.estrella {
+    font-size: 2.2em;
+    cursor: pointer;
+    color: #BBA3D0;
+    transition: color 0.2s;
+}
+.estrella.selected, .estrella:hover, .estrella:hover ~ .estrella {
+    color: #fff;
+}
+
+.btn {
+    background: linear-gradient(120deg, #9B71B0 60%, #BBA3D0 100%);
+    color: #222;
+    border: none;
+    border-radius: 25px;
+    padding: 1em 2em;
+    font-size: 1.1em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(155,113,176,0.10);
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+    margin-top: 1em;
+}
+.btn:hover {
+    background: linear-gradient(120deg, #BBA3D0 60%, #9B71B0 100%);
+    color: #fff;
+    transform: scale(1.04);
+}
+
+.msg {
+    margin-top: 1.5em;
+    font-size: 1.1em;
+}

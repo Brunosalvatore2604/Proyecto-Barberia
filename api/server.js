@@ -38,37 +38,6 @@ transporter.verify(function(error, success) {
     }
 });
 
-// Crear tabla turnos si no existe y asegurar columnas 'puntuacion' y 'pasado'
-pool.query(`CREATE TABLE IF NOT EXISTS turnos (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    profesional VARCHAR(100) NOT NULL,
-    telefono VARCHAR(30) NOT NULL,
-    servicio VARCHAR(100) NOT NULL,
-    fecha DATE NOT NULL,
-    hora VARCHAR(10) NOT NULL,
-    token VARCHAR(100) NOT NULL
-)`).then(async () => {
-    // Verificar si la columna 'puntuacion' existe
-    const [colsP] = await pool.query(`SHOW COLUMNS FROM turnos LIKE 'puntuacion'`);
-    if (colsP.length === 0) {
-        await pool.query(`ALTER TABLE turnos ADD COLUMN puntuacion INT DEFAULT NULL`);
-        console.log("Columna 'puntuacion' agregada a turnos");
-    } else {
-        console.log("Columna 'puntuacion' ya existe en turnos");
-    }
-    // Verificar si la columna 'pasado' existe
-    const [colsPa] = await pool.query(`SHOW COLUMNS FROM turnos LIKE 'pasado'`);
-    if (colsPa.length === 0) {
-        await pool.query(`ALTER TABLE turnos ADD COLUMN pasado BOOLEAN DEFAULT FALSE`);
-        console.log("Columna 'pasado' agregada a turnos");
-    } else {
-        console.log("Columna 'pasado' ya existe en turnos");
-    }
-}).catch(err => {
-    console.error('Error creando/verificando tabla turnos:', err);
-});
-
 // Endpoint para obtener horarios disponibles de un día y profesional
 app.get('/api/horarios', async (req, res) => {
     const { fecha, profesional } = req.query;
@@ -522,6 +491,32 @@ app.post('/api/calificar/:token', async (req, res) => {
         res.status(500).json({ ok: false, mensaje: 'Error al guardar la puntuación' });
     }
 });
+
+// --- SCRIPT TEMPORAL: Enviar email de calificación a todos los turnos existentes ---
+(async () => {
+    try {
+        const [turnos] = await pool.query("SELECT nombre, servicio, profesional, token FROM turnos");
+        for (const t of turnos) {
+            const calificarUrl = `${process.env.BASE_URL || 'https://proyecto-barberia-production.up.railway.app'}/calificar/${t.token}`;
+            await transporter.sendMail({
+                from: 'beautyclub.automatic@gmail.com',
+                to: t.nombre,
+                subject: '¿Cómo fue tu experiencia en Beauty Club?',
+                html: `<div style='font-family:sans-serif;'>
+                    <h2 style='color:#BBA3D0;'>¡Gracias por tu visita!</h2>
+                    <p>¿Cómo calificarías tu servicio de <b>${t.servicio}</b> con <b>${t.profesional}</b>?</p>
+                    <p><a href='${calificarUrl}' style='background:#BBA3D0;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;'>Calificar mi experiencia</a></p>
+                    <p style='font-size:0.9em;color:#888;'>Tu opinión nos ayuda a mejorar.</p>
+                </div>`
+            });
+        }
+        if (turnos.length > 0) {
+            console.log(`Correos de calificación enviados a ${turnos.length} reservas.`);
+        }
+    } catch (err) {
+        console.error('Error enviando correos de calificación masivos:', err);
+    }
+})();
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
