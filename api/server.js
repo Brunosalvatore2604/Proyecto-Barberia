@@ -17,24 +17,6 @@ pool.getConnection()
         console.error('Error al conectar a MySQL:', err);
     });
 
-// Crear tabla personas si no existe y asegurar columna 'validado'
-pool.query(`CREATE TABLE IF NOT EXISTS personas (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(100) NOT NULL,
-    gmail VARCHAR(100) NOT NULL UNIQUE
-)`).then(async () => {
-    // Verificar si la columna 'validado' existe
-    const [cols] = await pool.query(`SHOW COLUMNS FROM personas LIKE 'validado'`);
-    if (cols.length === 0) {
-        await pool.query(`ALTER TABLE personas ADD COLUMN validado BOOLEAN DEFAULT FALSE`);
-        console.log("Columna 'validado' agregada a personas");
-    } else {
-        console.log("Columna 'validado' ya existe en personas");
-    }
-}).catch(err => {
-    console.error('Error creando/verificando tabla personas:', err);
-});
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -54,6 +36,37 @@ transporter.verify(function(error, success) {
     } else {
         console.log('Nodemailer listo para enviar correos');
     }
+});
+
+// Crear tabla turnos si no existe y asegurar columnas 'puntuacion' y 'pasado'
+pool.query(`CREATE TABLE IF NOT EXISTS turnos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    profesional VARCHAR(100) NOT NULL,
+    telefono VARCHAR(30) NOT NULL,
+    servicio VARCHAR(100) NOT NULL,
+    fecha DATE NOT NULL,
+    hora VARCHAR(10) NOT NULL,
+    token VARCHAR(100) NOT NULL
+)`).then(async () => {
+    // Verificar si la columna 'puntuacion' existe
+    const [colsP] = await pool.query(`SHOW COLUMNS FROM turnos LIKE 'puntuacion'`);
+    if (colsP.length === 0) {
+        await pool.query(`ALTER TABLE turnos ADD COLUMN puntuacion INT DEFAULT NULL`);
+        console.log("Columna 'puntuacion' agregada a turnos");
+    } else {
+        console.log("Columna 'puntuacion' ya existe en turnos");
+    }
+    // Verificar si la columna 'pasado' existe
+    const [colsPa] = await pool.query(`SHOW COLUMNS FROM turnos LIKE 'pasado'`);
+    if (colsPa.length === 0) {
+        await pool.query(`ALTER TABLE turnos ADD COLUMN pasado BOOLEAN DEFAULT FALSE`);
+        console.log("Columna 'pasado' agregada a turnos");
+    } else {
+        console.log("Columna 'pasado' ya existe en turnos");
+    }
+}).catch(err => {
+    console.error('Error creando/verificando tabla turnos:', err);
 });
 
 // Endpoint para obtener horarios disponibles de un día y profesional
@@ -444,6 +457,71 @@ function programarRecordatorios() {
     }, msHastaProxima);
 }
 programarRecordatorios();
+
+// --- JOB: Marcar turnos pasados y enviar mail de calificación ---
+async function marcarTurnosPasadosYCalificar() {
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+    const dd = String(hoy.getDate()).padStart(2, '0');
+    const fechaHoy = `${yyyy}-${mm}-${dd}`;
+    // Buscar turnos que pasan a pasado
+    const [turnos] = await pool.query("SELECT id, nombre, servicio, profesional, fecha, hora, token, pasado FROM turnos WHERE fecha < ? AND pasado = FALSE", [fechaHoy]);
+    if (turnos.length > 0) {
+        for (const t of turnos) {
+            // Enviar mail de calificación
+            const calificarUrl = `${process.env.BASE_URL || 'https://proyecto-barberia-production.up.railway.app'}/calificar/${t.token}`;
+            await transporter.sendMail({
+                from: 'beautyclub.automatic@gmail.com',
+                to: t.nombre,
+                subject: '¿Cómo fue tu experiencia en Beauty Club?',
+                html: `<div style='font-family:sans-serif;'>
+                    <h2 style='color:#BBA3D0;'>¡Gracias por tu visita!</h2>
+                    <p>¿Cómo calificarías tu servicio de <b>${t.servicio}</b> con <b>${t.profesional}</b>?</p>
+                    <p><a href='${calificarUrl}' style='background:#BBA3D0;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;'>Calificar mi experiencia</a></p>
+                    <p style='font-size:0.9em;color:#888;'>Tu opinión nos ayuda a mejorar.</p>
+                </div>`
+            });
+        }
+        // Marcar como pasados
+        await pool.query('UPDATE turnos SET pasado = TRUE WHERE fecha < ? AND pasado = FALSE', [fechaHoy]);
+        console.log(`Turnos marcados como pasados y mails de calificación enviados: ${turnos.length}`);
+    }
+}
+// Ejecutar todos los días a las 00:10 AM (servidor)
+function programarMarcarPasados() {
+    const ahora = new Date();
+    const proxima = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate(), 0, 10, 0, 0);
+    if (ahora > proxima) proxima.setDate(proxima.getDate() + 1);
+    const msHastaProxima = proxima - ahora;
+    setTimeout(() => {
+        marcarTurnosPasadosYCalificar();
+        setInterval(marcarTurnosPasadosYCalificar, 24 * 60 * 60 * 1000); // Cada 24h
+    }, msHastaProxima);
+}
+programarMarcarPasados();
+
+// Endpoint para servir la página de calificación
+app.get('/calificar/:token', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/calificar/calificar.html'));
+});
+
+// Endpoint para guardar la puntuación
+app.post('/api/calificar/:token', async (req, res) => {
+    const { token } = req.params;
+    const { puntuacion } = req.body;
+    if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
+        return res.status(400).json({ ok: false, mensaje: 'Puntuación inválida' });
+    }
+    try {
+        const [rows] = await pool.query('SELECT id FROM turnos WHERE token = ?', [token]);
+        if (rows.length === 0) return res.status(404).json({ ok: false, mensaje: 'Turno no encontrado' });
+        await pool.query('UPDATE turnos SET puntuacion = ? WHERE token = ?', [puntuacion, token]);
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ ok: false, mensaje: 'Error al guardar la puntuación' });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
