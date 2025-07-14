@@ -39,13 +39,23 @@ async function cargarCalificaciones() {
     calificados.forEach(r => {
         const div = document.createElement('div');
         div.className = 'calificacion-item';
+        div.style = `
+            background: linear-gradient(120deg, #23232b 80%, #9B71B0 100%);
+            border-radius: 18px;
+            box-shadow: 0 4px 18px rgba(155,113,176,0.13);
+            border: 2px solid #BBA3D0;
+            margin: 1.2em 0;
+            padding: 1.3em 1.5em 1.1em 1.5em;
+            max-width: 480px;
+            color: #eee;
+        `;
         div.innerHTML = `
-            <b>Servicio:</b> ${r.servicio}<br>
-            <b>Fecha:</b> <span class="fecha-label">${formatFecha(r.fecha)}</span> <b>Hora:</b> <span class="hora-label">${formatHora(r.hora)}</span><br>
-            <b>Profesional:</b> ${r.profesional}<br>
-            <b>Correo:</b> ${r.nombre}<br>
-            <b>Calificación:</b> <span style="color:#BBA3D0;">${'★'.repeat(r.puntuacion)} (${r.puntuacion}/5)</span><br>
-            <b>Comentario:</b> <span style="color:#BBA3D0;">${r.comentario ? r.comentario.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '<span style=\'color:#888\'>Sin comentario</span>'}</span>
+            <div style="display:flex;align-items:center;gap:0.7em;margin-bottom:0.7em;">
+                <span style="font-size:1.7em;color:#BBA3D0;">${'★'.repeat(r.puntuacion)}</span>
+                <span style="font-size:1.1em;">${r.puntuacion}/5</span>
+            </div>
+            <div style="margin-bottom:0.5em;"><b>Comentario:</b> <span style="color:#BBA3D0;">${r.comentario ? r.comentario.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '<span style=\'color:#888\'>Sin comentario</span>'}</span></div>
+            <div style="font-size:0.98em;color:#bba3d0b0;">${r.servicio} | ${r.profesional} | ${r.nombre} | ${formatFecha(r.fecha)} ${formatHora(r.hora)}</div>
         `;
         calificacionesList.appendChild(div);
     });
@@ -119,20 +129,14 @@ async function cargarReservas() {
         const div = document.createElement('div');
         div.className = 'reserva-item';
         div.id = `reserva-${r.id}`;
-        let califHtml = '';
-        if (r.puntuacion || r.comentario) {
-            califHtml = `<div class="calificacion-box" style="margin:0.7em 0 0.2em 0;padding:0.7em 1em;background:#18171c;border-radius:12px;border:1.5px solid #BBA3D0;">
-                <b>Calificación:</b> ${r.puntuacion ? '★'.repeat(r.puntuacion) + ' ('+r.puntuacion+'/5)' : '<span style=\'color:#888\'>Sin calificar</span>'}<br>
-                <b>Comentario:</b> <span style="color:#BBA3D0;">${r.comentario ? r.comentario.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '<span style=\'color:#888\'>Sin comentario</span>'}</span>
-            </div>`;
-        }
+        
         div.innerHTML = `
             <b>Servicio:</b> ${r.servicio}<br>
             <b>Fecha:</b> <span class="fecha-label">${formatFecha(r.fecha)}</span> <b>Hora:</b> <span class="hora-label">${formatHora(r.hora)}</span><br>
             <b>Profesional:</b> ${r.profesional}<br>
             <b>Correo:</b> ${r.nombre}<br>
             <b>Teléfono:</b> ${r.telefono}<br>
-            ${califHtml}
+            
             <div class="reserva-actions">
                 <button class="btn-editar" onclick="editarReserva('${r.id}')">Editar</button>
                 <button class="btn-eliminar" onclick="eliminarReserva('${r.id}')">Eliminar</button>
