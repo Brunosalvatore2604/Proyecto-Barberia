@@ -7,9 +7,9 @@ const crypto = require('crypto');
 const app = express();
 
 // --- ALTER TABLE para agregar columna comentario si no existe ---
-pool.query("ALTER TABLE turnos ADD COLUMN IF NOT EXISTS comentario VARCHAR(255)")
+pool.query("ALTER TABLE turnos ADD COLUMN comentario VARCHAR(255)")
     .then(() => console.log('Columna comentario lista en turnos'))
-    .catch(() => {});
+    .catch(() => {console.log("Error poniendo tabla")});
 const PORT = process.env.PORT || 3001;
 
 // Probar conexión a la base de datos al iniciar
