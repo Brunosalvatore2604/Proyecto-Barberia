@@ -9,6 +9,9 @@ btnCalificaciones.onclick = () => {
     btnCalificaciones.classList.add('active');
     document.getElementById('btn-reservas').classList.remove('active');
     document.getElementById('btn-solicitudes').classList.remove('active');
+    // Limpiar las otras listas para evitar duplicados visuales
+    document.getElementById('solicitudes-table').parentElement.querySelector('tbody').innerHTML = '';
+    calificacionesList.innerHTML = '';
     cargarCalificaciones();
 };
 
@@ -19,6 +22,20 @@ document.getElementById('btn-reservas').onclick = () => {
     document.getElementById('btn-reservas').classList.add('active');
     document.getElementById('btn-solicitudes').classList.remove('active');
     btnCalificaciones.classList.remove('active');
+    // Limpiar las otras listas para evitar duplicados visuales
+    calificacionesList.innerHTML = '';
+    document.getElementById('solicitudes-table').parentElement.querySelector('tbody').innerHTML = '';
+};
+document.getElementById('btn-solicitudes').onclick = () => {
+    document.getElementById('reservas-section').style.display = 'none';
+    document.getElementById('solicitudes-section').style.display = 'block';
+    calificacionesSection.style.display = 'none';
+    document.getElementById('btn-solicitudes').classList.add('active');
+    document.getElementById('btn-reservas').classList.remove('active');
+    btnCalificaciones.classList.remove('active');
+    // Limpiar las otras listas para evitar duplicados visuales
+    calificacionesList.innerHTML = '';
+    // Si tienes una función para cargar solicitudes, llámala aquí
 };
 
 async function cargarCalificaciones() {
