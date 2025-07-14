@@ -1,3 +1,36 @@
+.comentario-box {
+    margin: 1.2em 0 0.7em 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#comentario {
+    width: 100%;
+    min-height: 70px;
+    max-width: 100%;
+    background: #18171c;
+    color: #eee;
+    border: 1.5px solid #BBA3D0;
+    border-radius: 12px;
+    padding: 0.9em 1em;
+    font-size: 1.08em;
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(155,113,176,0.08);
+    margin-bottom: 0.2em;
+    transition: border 0.2s, box-shadow 0.2s;
+    resize: vertical;
+}
+#comentario:focus {
+    outline: none;
+    border: 2px solid #9B71B0;
+    box-shadow: 0 0 0 2px #BBA3D033;
+}
+#comentario::placeholder {
+    color: #bba3d0cc;
+    font-style: italic;
+    opacity: 1;
+}
 body {
     background: linear-gradient(120deg, #18171c 60%, #9B71B0 100%);
     font-family: 'Segoe UI', Arial, sans-serif;
