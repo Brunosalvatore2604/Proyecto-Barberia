@@ -5,6 +5,11 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 
 const app = express();
+
+// --- ALTER TABLE para agregar columna comentario si no existe ---
+pool.query("ALTER TABLE turnos ADD COLUMN IF NOT EXISTS comentario VARCHAR(255)")
+    .then(() => console.log('Columna comentario lista en turnos'))
+    .catch(() => {});
 const PORT = process.env.PORT || 3001;
 
 // Probar conexión a la base de datos al iniciar
@@ -43,12 +48,31 @@ app.get('/api/horarios', async (req, res) => {
     const { fecha, profesional } = req.query;
     if (!fecha) return res.status(400).json({ error: 'Fecha requerida' });
     if (!profesional) return res.status(400).json({ error: 'Profesional requerido' });
-    const HORARIOS = [
-        '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
-        '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-        '16:00', '16:30', '17:00', '17:30', '18:00', '18:30',
-        '19:00', '19:30', '20:00', '20:30', '21:00', '21:30', '22:00'
-    ];
+    let HORARIOS = [];
+    // Franja horaria: 10:00 a 22:00
+    const inicio = 10 * 60; // minutos desde 00:00
+    const fin = 22 * 60; // minutos desde 00:00
+    if (profesional && profesional.toLowerCase().includes('agustin')) {
+        // Turnos de 45 minutos
+        for (let min = inicio; min < fin; min += 45) {
+            const h = Math.floor(min / 60).toString().padStart(2, '0');
+            const m = (min % 60).toString().padStart(2, '0');
+            HORARIOS.push(`${h}:${m}`);
+        }
+    } else if (profesional && profesional.toLowerCase().includes('gabriela')) {
+        // Turnos de 1 hora
+        for (let min = inicio; min < fin; min += 60) {
+            const h = Math.floor(min / 60).toString().padStart(2, '0');
+            HORARIOS.push(`${h}:00`);
+        }
+    } else {
+        // Default: cada 30 minutos
+        for (let min = inicio; min < fin; min += 30) {
+            const h = Math.floor(min / 60).toString().padStart(2, '0');
+            const m = (min % 60).toString().padStart(2, '0');
+            HORARIOS.push(`${h}:${m}`);
+        }
+    }
     try {
         // Solo filtrar los turnos ocupados por ese profesional
         const [rows] = await pool.query('SELECT hora FROM turnos WHERE fecha = ? AND profesional = ?', [fecha, profesional]);
@@ -144,7 +168,22 @@ app.get('/api/cancelar/:token', async (req, res) => {
         if (rows.length === 0) {
             return res.json({ ok: false, mensaje: 'Reserva no encontrada o ya cancelada.' });
         }
-        res.json({ ok: true, reserva: rows[0] });
+        let reserva = rows[0];
+        // Formatear fecha a DD/MM/YYYY si es Date o string tipo '2025-07-14T00:00:00.000Z'
+        let fecha = reserva.fecha;
+        if (fecha instanceof Date) {
+            fecha = fecha.toISOString().slice(0,10);
+        }
+        if (typeof fecha === 'string' && fecha.includes('-')) {
+            const [y,m,d] = fecha.slice(0,10).split('-');
+            fecha = `${d}/${m}/${y}`;
+        }
+        // Formatear hora a HH:MM
+        let hora = reserva.hora;
+        if (typeof hora === 'string' && hora.length >= 5) {
+            hora = hora.slice(0,5);
+        }
+        res.json({ ok: true, reserva: { ...reserva, fecha, hora } });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al buscar la reserva.' });
     }
@@ -502,14 +541,17 @@ app.get('/calificar/:token', (req, res) => {
 // Endpoint para guardar la puntuación
 app.post('/api/calificar/:token', async (req, res) => {
     const { token } = req.params;
-    const { puntuacion } = req.body;
+    const { puntuacion, comentario } = req.body;
     if (!puntuacion || puntuacion < 1 || puntuacion > 5) {
         return res.status(400).json({ ok: false, mensaje: 'Puntuación inválida' });
     }
     try {
-        const [rows] = await pool.query('SELECT id FROM turnos WHERE token = ?', [token]);
+        const [rows] = await pool.query('SELECT id, puntuacion FROM turnos WHERE token = ?', [token]);
         if (rows.length === 0) return res.status(404).json({ ok: false, mensaje: 'Turno no encontrado' });
-        await pool.query('UPDATE turnos SET puntuacion = ? WHERE token = ?', [puntuacion, token]);
+        if (rows[0].puntuacion && rows[0].puntuacion > 0) {
+            return res.status(409).json({ ok: false, mensaje: 'Este turno ya fue calificado.' });
+        }
+        await pool.query('UPDATE turnos SET puntuacion = ?, comentario = ? WHERE token = ?', [puntuacion, comentario || null, token]);
         res.json({ ok: true });
     } catch (err) {
         res.status(500).json({ ok: false, mensaje: 'Error al guardar la puntuación' });

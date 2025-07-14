@@ -16,6 +16,7 @@
             <span class="estrella" data-value="4">★</span>
             <span class="estrella" data-value="5">★</span>
         </div>
+        <textarea id="comentario" placeholder="¿Algún comentario? (opcional)" maxlength="255" style="width:100%;margin:12px 0 8px 0;min-height:60px;resize:vertical;"></textarea>
         <button class="btn" id="btn-enviar">Enviar calificación</button>
         <div class="msg" id="msg"></div>
     </div>
@@ -46,10 +47,11 @@
         }
         this.disabled = true;
         document.getElementById('msg').textContent = 'Enviando...';
+        const comentario = document.getElementById('comentario').value.trim();
         const res = await fetch(`/api/calificar/${token}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ puntuacion })
+            body: JSON.stringify({ puntuacion, comentario })
         });
         const data = await res.json();
         if (data.ok) {
