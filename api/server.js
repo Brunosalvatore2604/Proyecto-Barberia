@@ -82,7 +82,7 @@ app.get('/api/horarios', async (req, res) => {
             disponibles = disponibles.filter(horario => {
                 const [h, m] = horario.split(':').map(Number);
                 const turnoMin = h * 60 + m;
-                return turnoMin > ahoraMin;
+                return turnoMin >= ahoraMin;
             });
         }
 
