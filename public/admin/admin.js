@@ -35,7 +35,7 @@ document.getElementById('btn-solicitudes').onclick = () => {
     btnCalificaciones.classList.remove('active');
     // Limpiar las otras listas para evitar duplicados visuales
     calificacionesList.innerHTML = '';
-    // Si tienes una función para cargar solicitudes, llámala aquí
+    if (typeof cargarSolicitudes === 'function') cargarSolicitudes();
 };
 
 async function cargarCalificaciones() {
