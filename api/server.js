@@ -252,7 +252,7 @@ app.get('/admin', (req, res) => {
 // Endpoint API: listar reservas (admin)
 app.get('/api/admin/reservas', async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora FROM turnos ORDER BY fecha, hora');
+        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora, puntuacion, comentario FROM turnos ORDER BY fecha, hora');
         res.json({ ok: true, reservas: rows });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al consultar reservas' });

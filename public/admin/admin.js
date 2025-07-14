@@ -1,3 +1,55 @@
+const btnCalificaciones = document.getElementById('btn-calificaciones');
+const calificacionesSection = document.getElementById('calificaciones-section');
+const calificacionesList = document.getElementById('calificaciones-list');
+
+btnCalificaciones.onclick = () => {
+    document.getElementById('reservas-section').style.display = 'none';
+    document.getElementById('solicitudes-section').style.display = 'none';
+    calificacionesSection.style.display = 'block';
+    btnCalificaciones.classList.add('active');
+    document.getElementById('btn-reservas').classList.remove('active');
+    document.getElementById('btn-solicitudes').classList.remove('active');
+    cargarCalificaciones();
+};
+
+document.getElementById('btn-reservas').onclick = () => {
+    document.getElementById('reservas-section').style.display = 'block';
+    document.getElementById('solicitudes-section').style.display = 'none';
+    calificacionesSection.style.display = 'none';
+    document.getElementById('btn-reservas').classList.add('active');
+    document.getElementById('btn-solicitudes').classList.remove('active');
+    btnCalificaciones.classList.remove('active');
+};
+
+async function cargarCalificaciones() {
+    calificacionesList.innerHTML = 'Cargando calificaciones...';
+    const res = await fetch('/api/admin/reservas');
+    const data = await res.json();
+    if (!data.ok) {
+        calificacionesList.innerHTML = '<div style="color:#c00">Error al cargar calificaciones</div>';
+        return;
+    }
+    // Solo mostrar turnos pasados y calificados
+    const calificados = data.reservas.filter(r => r.puntuacion && r.puntuacion > 0);
+    if (calificados.length === 0) {
+        calificacionesList.innerHTML = '<div>No hay turnos calificados aún.</div>';
+        return;
+    }
+    calificacionesList.innerHTML = '';
+    calificados.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'calificacion-item';
+        div.innerHTML = `
+            <b>Servicio:</b> ${r.servicio}<br>
+            <b>Fecha:</b> <span class="fecha-label">${formatFecha(r.fecha)}</span> <b>Hora:</b> <span class="hora-label">${formatHora(r.hora)}</span><br>
+            <b>Profesional:</b> ${r.profesional}<br>
+            <b>Correo:</b> ${r.nombre}<br>
+            <b>Calificación:</b> <span style="color:#BBA3D0;">${'★'.repeat(r.puntuacion)} (${r.puntuacion}/5)</span><br>
+            <b>Comentario:</b> <span style="color:#BBA3D0;">${r.comentario ? r.comentario.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '<span style=\'color:#888\'>Sin comentario</span>'}</span>
+        `;
+        calificacionesList.appendChild(div);
+    });
+}
 // admin.js
 const PASS = 'admin';
 
@@ -67,12 +119,20 @@ async function cargarReservas() {
         const div = document.createElement('div');
         div.className = 'reserva-item';
         div.id = `reserva-${r.id}`;
+        let califHtml = '';
+        if (r.puntuacion || r.comentario) {
+            califHtml = `<div class="calificacion-box" style="margin:0.7em 0 0.2em 0;padding:0.7em 1em;background:#18171c;border-radius:12px;border:1.5px solid #BBA3D0;">
+                <b>Calificación:</b> ${r.puntuacion ? '★'.repeat(r.puntuacion) + ' ('+r.puntuacion+'/5)' : '<span style=\'color:#888\'>Sin calificar</span>'}<br>
+                <b>Comentario:</b> <span style="color:#BBA3D0;">${r.comentario ? r.comentario.replace(/</g,'&lt;').replace(/>/g,'&gt;') : '<span style=\'color:#888\'>Sin comentario</span>'}</span>
+            </div>`;
+        }
         div.innerHTML = `
             <b>Servicio:</b> ${r.servicio}<br>
             <b>Fecha:</b> <span class="fecha-label">${formatFecha(r.fecha)}</span> <b>Hora:</b> <span class="hora-label">${formatHora(r.hora)}</span><br>
             <b>Profesional:</b> ${r.profesional}<br>
             <b>Correo:</b> ${r.nombre}<br>
             <b>Teléfono:</b> ${r.telefono}<br>
+            ${califHtml}
             <div class="reserva-actions">
                 <button class="btn-editar" onclick="editarReserva('${r.id}')">Editar</button>
                 <button class="btn-eliminar" onclick="eliminarReserva('${r.id}')">Eliminar</button>
