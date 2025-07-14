@@ -6,10 +6,6 @@ const crypto = require('crypto');
 
 const app = express();
 
-// --- ALTER TABLE para agregar columna comentario si no existe ---
-pool.query("ALTER TABLE turnos ADD COLUMN comentario VARCHAR(255)")
-    .then(() => console.log('Columna comentario lista en turnos'))
-    .catch(() => {console.log("Error poniendo tabla")});
 const PORT = process.env.PORT || 3001;
 
 // Probar conexión a la base de datos al iniciar
@@ -45,7 +41,7 @@ transporter.verify(function(error, success) {
 
 // Endpoint para obtener horarios disponibles de un día y profesional
 app.get('/api/horarios', async (req, res) => {
-    const { fecha, profesional } = req.query;
+    const { fecha, profesional, modo } = req.query;
     if (!fecha) return res.status(400).json({ error: 'Fecha requerida' });
     if (!profesional) return res.status(400).json({ error: 'Profesional requerido' });
     let HORARIOS = [];
@@ -53,20 +49,17 @@ app.get('/api/horarios', async (req, res) => {
     const inicio = 10 * 60; // minutos desde 00:00
     const fin = 22 * 60; // minutos desde 00:00
     if (profesional && profesional.toLowerCase().includes('agustin')) {
-        // Turnos de 45 minutos
         for (let min = inicio; min < fin; min += 45) {
             const h = Math.floor(min / 60).toString().padStart(2, '0');
             const m = (min % 60).toString().padStart(2, '0');
             HORARIOS.push(`${h}:${m}`);
         }
     } else if (profesional && profesional.toLowerCase().includes('gabriela')) {
-        // Turnos de 1 hora
         for (let min = inicio; min < fin; min += 60) {
             const h = Math.floor(min / 60).toString().padStart(2, '0');
             HORARIOS.push(`${h}:00`);
         }
     } else {
-        // Default: cada 30 minutos
         for (let min = inicio; min < fin; min += 30) {
             const h = Math.floor(min / 60).toString().padStart(2, '0');
             const m = (min % 60).toString().padStart(2, '0');
@@ -74,10 +67,25 @@ app.get('/api/horarios', async (req, res) => {
         }
     }
     try {
-        // Solo filtrar los turnos ocupados por ese profesional
         const [rows] = await pool.query('SELECT hora FROM turnos WHERE fecha = ? AND profesional = ?', [fecha, profesional]);
         const ocupados = rows.map(r => r.hora.slice(0,5));
-        const disponibles = HORARIOS.filter(h => !ocupados.includes(h));
+        let disponibles = HORARIOS.filter(h => !ocupados.includes(h));
+
+        // Si la fecha es hoy, filtrar horarios pasados (tanto para usuario como para admin)
+        const hoy = new Date();
+        const yyyy = hoy.getFullYear();
+        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoy.getDate()).padStart(2, '0');
+        const fechaHoy = `${yyyy}-${mm}-${dd}`;
+        if (fecha === fechaHoy) {
+            const ahoraMin = hoy.getHours() * 60 + hoy.getMinutes();
+            disponibles = disponibles.filter(horario => {
+                const [h, m] = horario.split(':').map(Number);
+                const turnoMin = h * 60 + m;
+                return turnoMin > ahoraMin;
+            });
+        }
+
         res.json({ fecha, profesional, disponibles });
     } catch (err) {
         res.status(500).json({ error: 'Error consultando horarios' });
@@ -95,7 +103,24 @@ app.post('/api/turnos', async (req, res) => {
         const [personas] = await pool.query('SELECT validado FROM personas WHERE gmail = ?', [correo]);
         if (personas.length === 0 || !personas[0].validado) {
             return res.status(403).json({ error: 'No estás inscripto o validado. Por favor, inscríbete primero.' });
-        } 
+        }
+
+        // Validar que no se pueda reservar para horas pasadas en el día actual
+        const hoy = new Date();
+        const yyyy = hoy.getFullYear();
+        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dd = String(hoy.getDate()).padStart(2, '0');
+        const fechaHoy = `${yyyy}-${mm}-${dd}`;
+        if (fecha === fechaHoy) {
+            // hora viene como 'HH:MM'
+            const [h, m] = hora.split(':').map(Number);
+            const ahoraMin = hoy.getHours() * 60 + hoy.getMinutes();
+            const turnoMin = h * 60 + m;
+            if (turnoMin <= ahoraMin) {
+                return res.status(400).json({ error: 'No se puede reservar para una hora que ya pasó.' });
+            }
+        }
+
         // Verifica si el mail ya tiene una reserva en los próximos 6 días
         const [reservas] = await pool.query(
             `SELECT id FROM turnos WHERE nombre = ? AND fecha BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
