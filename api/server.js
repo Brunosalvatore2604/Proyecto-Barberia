@@ -72,14 +72,14 @@ app.get('/api/horarios', async (req, res) => {
         let disponibles = HORARIOS.filter(h => !ocupados.includes(h));
 
         // Si la fecha es hoy, filtrar horarios pasados (tanto para usuario como para admin)
-        // Usar hora de Uruguay (America/Montevideo)
-        const ahoraUy = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Montevideo' }));
-        const yyyy = ahoraUy.getFullYear();
-        const mm = String(ahoraUy.getMonth() + 1).padStart(2, '0');
-        const dd = String(ahoraUy.getDate()).padStart(2, '0');
+        // Usar hora de Uruguay (America/Montevideo) precisa
+        const ahoraUyStr = new Date().toLocaleString('sv-SE', { timeZone: 'America/Montevideo' }); // 'YYYY-MM-DD HH:mm:ss'
+        const [fechaUy, horaUy] = ahoraUyStr.split(' ');
+        const [yyyy, mm, dd] = fechaUy.split('-');
         const fechaHoy = `${yyyy}-${mm}-${dd}`;
         if (fecha === fechaHoy) {
-            const ahoraMin = ahoraUy.getHours() * 60 + ahoraUy.getMinutes();
+            const [horaAct, minAct] = horaUy.split(':').map(Number);
+            const ahoraMin = horaAct * 60 + minAct;
             disponibles = disponibles.filter(horario => {
                 const [h, m] = horario.split(':').map(Number);
                 const turnoMin = h * 60 + m;
