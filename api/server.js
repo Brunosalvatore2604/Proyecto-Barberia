@@ -148,13 +148,29 @@ app.post('/api/turnos', async (req, res) => {
             'INSERT INTO turnos (nombre, profesional, telefono, servicio, fecha, hora, token) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [correo, profesional, telefono, servicio, fecha, hora, token]
         );
-        // Enviar email de confirmación con link de cancelación
+        // Enviar email de confirmación con link de cancelación (HTML fachero)
         const cancelUrl = `${process.env.BASE_URL || 'https://proyecto-barberia-production.up.railway.app'}/cancelar/${token}`;
+        const cuerpoConfirm = `
+          <p><b>¡Hola!</b></p>
+          <p>Tu reserva fue agendada con éxito.</p>
+          <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
+            <li><b>Servicio:</b> ${servicio}</li>
+            <li><b>Profesional:</b> ${profesional}</li>
+            <li><b>Fecha:</b> ${fecha}</li>
+            <li><b>Hora:</b> ${hora}</li>
+            <li><b>Teléfono:</b> ${telefono}</li>
+          </ul>
+          <p>¿No puedes asistir? <a href=\"${cancelUrl}\" style=\"color:#BBA3D0;font-weight:bold;\">Cancela tu reserva aquí</a>.</p>
+          <p><b>¡Te esperamos en Beauty Club!</b></p>
+        `;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
             to: correo,
             subject: 'Confirmación de tu reserva en Beauty Club',
-            text: `¡Hola! Tu reserva fue agendada con éxito.\n\nServicio: ${servicio}\nFecha: ${fecha}\nHora: ${hora}\nTeléfono: ${telefono}\n\n¿No puedes asistir? Cancela tu reserva aquí: ${cancelUrl}\n\n¡Te esperamos en Beauty Club!`
+            html: mailTemplate({
+                titulo: 'Reserva confirmada',
+                cuerpo: cuerpoConfirm
+            })
         });
 
         // Enviar agenda de reservas pendientes al admin
@@ -223,6 +239,19 @@ app.get('/api/cancelar/:token', async (req, res) => {
 });
 
 // Endpoint API para cancelar reserva por token (usado por cancelar.js)
+// --- Utilidad para correos HTML con banner y título rosado ---
+function mailTemplate({ titulo, cuerpo }) {
+    return `
+    <div style="font-family:sans-serif;max-width:480px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px #0001;">
+      <img src=\"https://drive.google.com/uc?export=view&id=1kgNsMdQUk5cIxzARKWZ0M-sP1Vy-M_ya\" alt=\"Beauty Club\" style=\"width:100%;display:block;max-height:180px;object-fit:cover;\">
+      <div style=\"padding:24px 18px 18px 18px;\">
+        <h2 style=\"color:#BBA3D0;font-weight:bold;text-align:center;margin-top:0;margin-bottom:18px;\">${titulo}</h2>
+        <div style=\"font-size:1.08em;color:#23232b;line-height:1.6;\">${cuerpo}</div>
+      </div>
+    </div>
+    `;
+}
+
 app.post('/api/cancelar/:token', async (req, res) => {
     const { token } = req.params;
     try {
@@ -263,12 +292,26 @@ app.post('/api/cancelar/:token', async (req, res) => {
             subject: 'Reserva cancelada - Agenda actualizada',
             html: agendaHtml
         });
-        // Enviar correo al usuario notificando la cancelación
+        // Enviar correo HTML al usuario notificando la cancelación
+        const cuerpo = `
+          <p><b>Hola,</b></p>
+          <p>Te informamos que tu reserva ha sido <b>cancelada</b>.</p>
+          <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
+            <li><b>Servicio:</b> ${turno.servicio}</li>
+            <li><b>Profesional:</b> ${turno.profesional}</li>
+            <li><b>Fecha:</b> ${turno.fecha}</li>
+            <li><b>Hora:</b> ${turno.hora}</li>
+          </ul>
+          <p>Si tienes dudas, contáctanos.<br><b>Beauty Club</b></p>
+        `;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
             to: turno.nombre,
             subject: 'Tu reserva en Beauty Club ha sido cancelada',
-            text: `Hola,\n\nTe informamos que tu reserva ha sido cancelada.\n\nServicio: ${turno.servicio}\nProfesional: ${turno.profesional}\nFecha: ${turno.fecha}\nHora: ${turno.hora}\n\nSi tienes dudas, contáctanos.\n\nBeauty Club`
+            html: mailTemplate({
+                titulo: 'Reserva cancelada',
+                cuerpo
+            })
         });
         res.json({ ok: true, mensaje: 'Tu reserva ha sido cancelada exitosamente.' });
     } catch (err) {
@@ -407,13 +450,27 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
             subject: 'Reserva editada - Agenda actualizada',
             html: agendaHtml
         });
-        // Enviar correo al usuario notificando el cambio de horario
+        // Enviar correo HTML al usuario notificando el cambio de horario
         if (turno) {
+            const cuerpoEdit = `
+              <p><b>Hola,</b></p>
+              <p>Te informamos que tu reserva ha sido <b>modificada</b> por el administrador.</p>
+              <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
+                <li><b>Servicio:</b> ${turno.servicio}</li>
+                <li><b>Profesional:</b> ${turno.profesional}</li>
+                <li><b>Nueva fecha:</b> ${fecha}</li>
+                <li><b>Nueva hora:</b> ${hora}</li>
+              </ul>
+              <p>Si tienes dudas, contáctanos.<br><b>Beauty Club</b></p>
+            `;
             await transporter.sendMail({
                 from: 'beautyclub.automatic@gmail.com',
                 to: turno.nombre,
                 subject: 'Tu reserva en Beauty Club ha sido modificada',
-                text: `Hola,\n\nTe informamos que tu reserva ha sido modificada por el administrador.\n\nServicio: ${turno.servicio}\nProfesional: ${turno.profesional}\nNueva fecha: ${fecha}\nNueva hora: ${hora}\n\nSi tienes dudas, contáctanos.\n\nBeauty Club`
+                html: mailTemplate({
+                    titulo: 'Reserva modificada',
+                    cuerpo: cuerpoEdit
+                })
             });
         }
         res.json({ ok: true });
@@ -435,14 +492,19 @@ app.post('/api/inscribirse', async (req, res) => {
         await pool.query('INSERT INTO personas (nombre, gmail) VALUES (?, ?)', [nombre, gmail]);
         // Enviar correo al admin con los datos del aspirante y link al admin
         const adminUrl = `${process.env.BASE_URL || 'https://proyecto-barberia-production.up.railway.app'}/admin`;
+        const cuerpoAdmin = `
+          <p><b>Nombre:</b> ${nombre}</p>
+          <p><b>Gmail:</b> ${gmail}</p>
+          <p>Para validar o rechazar esta solicitud, ingresa al <a href="${adminUrl}" style="color:#BBA3D0;font-weight:bold;">panel de administración</a>.</p>
+        `;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
             to: 'beautyclub.automatic@gmail.com',
             subject: 'Nueva solicitud de inscripción - Beauty Club',
-            html: `<h2>Nueva solicitud de inscripción</h2>
-                <p><b>Nombre:</b> ${nombre}</p>
-                <p><b>Gmail:</b> ${gmail}</p>
-                <p>Para validar o rechazar esta solicitud, ingresa al <a href="${adminUrl}">panel de administración</a>.</p>`
+            html: mailTemplate({
+                titulo: 'Nueva solicitud de inscripción',
+                cuerpo: cuerpoAdmin
+            })
         });
         res.status(201).json({ mensaje: 'Inscripción exitosa' });
     } catch (err) {
@@ -473,12 +535,21 @@ app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
         const [rows] = await pool.query('SELECT nombre, gmail FROM personas WHERE id = ?', [id]);
         if (rows.length > 0) {
             const { nombre, gmail } = rows[0];
-            // Enviar email de notificación al usuario
+            // Enviar email de notificación al usuario (HTML fachero)
+            const cuerpoVal = `
+              <p><b>Hola ${nombre},</b></p>
+              <p>Tu inscripción ha sido <b>validada</b>. Ya puedes reservar tu turno en Beauty Club.</p>
+              <p>Ingresa a <a href=\"https://proyecto-barberia-production.up.railway.app/\" style=\"color:#BBA3D0;font-weight:bold;\">https://proyecto-barberia-production.up.railway.app/</a> para agendar tu cita.</p>
+              <p><b>¡Te esperamos!</b></p>
+            `;
             await transporter.sendMail({
                 from: 'beautyclub.automatic@gmail.com',
                 to: gmail,
                 subject: '¡Ya puedes reservar en Beauty Club!',
-                text: `Hola ${nombre},\n\nTu inscripción ha sido validada. Ya puedes reservar tu turno en Beauty Club.\n\nIngresa a https://proyecto-barberia-production.up.railway.app/ para agendar tu cita.\n\n¡Te esperamos!`
+                html: mailTemplate({
+                    titulo: 'Inscripción validada',
+                    cuerpo: cuerpoVal
+                })
             });
         }
         // Enviar al admin la tabla de usuarios validados
@@ -503,7 +574,10 @@ app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
             from: 'beautyclub.automatic@gmail.com',
             to: 'beautyclub.automatic@gmail.com',
             subject: 'Lista de usuarios validados actualizada',
-            html: tablaHtml
+            html: mailTemplate({
+                titulo: 'Usuarios validados',
+                cuerpo: tablaHtml
+            })
         });
         res.json({ ok: true });
     } catch (err) {
@@ -534,11 +608,27 @@ function enviarRecordatoriosTurnos() {
     pool.query('SELECT nombre, profesional, servicio, fecha, hora, telefono FROM turnos WHERE fecha = ?', [fechaManana])
         .then(async ([turnos]) => {
             for (const t of turnos) {
+                const cuerpoRec = `
+                  <p><b>Hola!</b></p>
+                  <p>Te recordamos que tienes un turno reservado para <b>mañana</b> en Beauty Club.</p>
+                  <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
+                    <li><b>Servicio:</b> ${t.servicio}</li>
+                    <li><b>Profesional:</b> ${t.profesional}</li>
+                    <li><b>Fecha:</b> ${t.fecha}</li>
+                    <li><b>Hora:</b> ${t.hora.slice(0,5)}</li>
+                    <li><b>Teléfono:</b> ${t.telefono}</li>
+                  </ul>
+                  <p>Si no puedes asistir, por favor cancela tu turno desde el enlace de confirmación.</p>
+                  <p><b>¡Te esperamos!</b></p>
+                `;
                 await transporter.sendMail({
                     from: 'beautyclub.automatic@gmail.com',
                     to: t.nombre, // nombre = correo
                     subject: 'Recordatorio de tu turno en Beauty Club',
-                    text: `Hola!\n\nTe recordamos que tienes un turno reservado para mañana en Beauty Club.\n\nServicio: ${t.servicio}\nProfesional: ${t.profesional}\nFecha: ${t.fecha}\nHora: ${t.hora.slice(0,5)}\nTeléfono: ${t.telefono}\n\nSi no puedes asistir, por favor cancela tu turno desde el enlace de confirmación.\n\n¡Te esperamos!`
+                    html: mailTemplate({
+                        titulo: 'Recordatorio de turno',
+                        cuerpo: cuerpoRec
+                    })
                 });
             }
             if (turnos.length > 0) {
@@ -579,12 +669,17 @@ async function marcarTurnosPasadosYCalificar() {
                 from: 'beautyclub.automatic@gmail.com',
                 to: t.nombre,
                 subject: '¿Cómo fue tu experiencia en Beauty Club?',
-                html: `<div style='font-family:sans-serif;'>
-                    <h2 style='color:#BBA3D0;'>¡Gracias por tu visita!</h2>
-                    <p>¿Cómo calificarías tu servicio de <b>${t.servicio}</b> con <b>${t.profesional}</b>?</p>
-                    <p><a href='${calificarUrl}' style='background:#BBA3D0;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;'>Calificar mi experiencia</a></p>
-                    <p style='font-size:0.9em;color:#888;'>Tu opinión nos ayuda a mejorar.</p>
-                </div>`
+                html: `
+                  <div style='font-family:sans-serif;max-width:480px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px #0001;'>
+                    <img src="https://drive.google.com/uc?export=view&id=1kgNsMdQUk5cIxzARKWZ0M-sP1Vy-M_ya" alt="Beauty Club" style="width:100%;display:block;max-height:180px;object-fit:cover;">
+                    <div style='padding:24px 18px 18px 18px;'>
+                      <h2 style='color:#BBA3D0;'>¡Gracias por tu visita!</h2>
+                      <p>¿Cómo calificarías tu servicio de <b>${t.servicio}</b> con <b>${t.profesional}</b>?</p>
+                      <p><a href='${calificarUrl}' style='background:#BBA3D0;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;'>Calificar mi experiencia</a></p>
+                      <p style='font-size:0.9em;color:#888;'>Tu opinión nos ayuda a mejorar.</p>
+                    </div>
+                  </div>
+                `
             });
         }
         // Marcar como pasados
