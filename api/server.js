@@ -226,10 +226,12 @@ app.get('/api/cancelar/:token', async (req, res) => {
 app.post('/api/cancelar/:token', async (req, res) => {
     const { token } = req.params;
     try {
-        const [rows] = await pool.query('SELECT id FROM turnos WHERE token = ?', [token]);
+        // Obtener datos del turno antes de eliminarlo
+        const [rows] = await pool.query('SELECT id, nombre, profesional, servicio, fecha, hora FROM turnos WHERE token = ?', [token]);
         if (rows.length === 0) {
             return res.json({ ok: false, mensaje: 'Reserva no encontrada o ya cancelada.' });
         }
+        const turno = rows[0];
         await pool.query('DELETE FROM turnos WHERE token = ?', [token]);
         // Enviar agenda de reservas pendientes al admin tras cancelar
         const [pendientes] = await pool.query("SELECT nombre, profesional, telefono, servicio, fecha, hora FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora");
@@ -260,6 +262,13 @@ app.post('/api/cancelar/:token', async (req, res) => {
             to: 'beautyclub.automatic@gmail.com',
             subject: 'Reserva cancelada - Agenda actualizada',
             html: agendaHtml
+        });
+        // Enviar correo al usuario notificando la cancelación
+        await transporter.sendMail({
+            from: 'beautyclub.automatic@gmail.com',
+            to: turno.nombre,
+            subject: 'Tu reserva en Beauty Club ha sido cancelada',
+            text: `Hola,\n\nTe informamos que tu reserva ha sido cancelada.\n\nServicio: ${turno.servicio}\nProfesional: ${turno.profesional}\nFecha: ${turno.fecha}\nHora: ${turno.hora}\n\nSi tienes dudas, contáctanos.\n\nBeauty Club`
         });
         res.json({ ok: true, mensaje: 'Tu reserva ha sido cancelada exitosamente.' });
     } catch (err) {
@@ -296,6 +305,12 @@ app.get('/api/admin/reservas', async (req, res) => {
 app.delete('/api/admin/reservas/:id', async (req, res) => {
     const { id } = req.params;
     try {
+        // Obtener datos del turno antes de eliminarlo
+        const [rows] = await pool.query('SELECT nombre, profesional, servicio, fecha, hora FROM turnos WHERE id = ?', [id]);
+        let turno = null;
+        if (rows.length > 0) {
+            turno = rows[0];
+        }
         await pool.query('DELETE FROM turnos WHERE id = ?', [id]);
         // Enviar agenda de reservas pendientes al admin tras eliminar
         const [pendientes] = await pool.query("SELECT nombre, profesional, telefono, servicio, fecha, hora FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora");
@@ -327,6 +342,15 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
             subject: 'Reserva eliminada - Agenda actualizada',
             html: agendaHtml
         });
+        // Enviar correo al usuario notificando la cancelación (si existía el turno)
+        if (turno) {
+            await transporter.sendMail({
+                from: 'beautyclub.automatic@gmail.com',
+                to: turno.nombre,
+                subject: 'Tu reserva en Beauty Club ha sido cancelada',
+                text: `Hola,\n\nTe informamos que tu reserva ha sido cancelada.\n\nServicio: ${turno.servicio}\nProfesional: ${turno.profesional}\nFecha: ${turno.fecha}\nHora: ${turno.hora}\n\nSi tienes dudas, contáctanos.\n\nBeauty Club`
+            });
+        }
         res.json({ ok: true });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al eliminar reserva' });
@@ -345,6 +369,12 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
         const [rows] = await pool.query('SELECT id FROM turnos WHERE fecha = ? AND hora = ? AND id != ?', [fecha, hora, id]);
         if (rows.length > 0) {
             return res.json({ ok: false, mensaje: 'Ese horario ya está ocupado' });
+        }
+        // Obtener datos del turno antes de actualizar
+        const [turnoRows] = await pool.query('SELECT nombre, profesional, servicio FROM turnos WHERE id = ?', [id]);
+        let turno = null;
+        if (turnoRows.length > 0) {
+            turno = turnoRows[0];
         }
         await pool.query('UPDATE turnos SET fecha = ?, hora = ? WHERE id = ?', [fecha, hora, id]);
         // Enviar agenda de reservas pendientes al admin tras editar
@@ -377,6 +407,15 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
             subject: 'Reserva editada - Agenda actualizada',
             html: agendaHtml
         });
+        // Enviar correo al usuario notificando el cambio de horario
+        if (turno) {
+            await transporter.sendMail({
+                from: 'beautyclub.automatic@gmail.com',
+                to: turno.nombre,
+                subject: 'Tu reserva en Beauty Club ha sido modificada',
+                text: `Hola,\n\nTe informamos que tu reserva ha sido modificada por el administrador.\n\nServicio: ${turno.servicio}\nProfesional: ${turno.profesional}\nNueva fecha: ${fecha}\nNueva hora: ${hora}\n\nSi tienes dudas, contáctanos.\n\nBeauty Club`
+            });
+        }
         res.json({ ok: true });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al actualizar reserva' });
