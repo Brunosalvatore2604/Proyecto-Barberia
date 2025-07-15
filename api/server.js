@@ -111,16 +111,18 @@ app.post('/api/turnos', async (req, res) => {
             return res.status(403).json({ error: 'No estás inscripto o validado. Por favor, inscríbete primero.' });
         }
 
-        // Validar que no se pueda reservar para horas pasadas en el día actual
-        const hoy = new Date();
-        const yyyy = hoy.getFullYear();
-        const mm = String(hoy.getMonth() + 1).padStart(2, '0');
-        const dd = String(hoy.getDate()).padStart(2, '0');
+        // Validar que no se pueda reservar para horas pasadas en el día actual (usar GMT-3)
+        const ahora = new Date();
+        const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
+        const gmt3 = new Date(utc - (3 * 60 * 60 * 1000));
+        const yyyy = gmt3.getFullYear();
+        const mm = String(gmt3.getMonth() + 1).padStart(2, '0');
+        const dd = String(gmt3.getDate()).padStart(2, '0');
         const fechaHoy = `${yyyy}-${mm}-${dd}`;
         if (fecha === fechaHoy) {
             // hora viene como 'HH:MM'
             const [h, m] = hora.split(':').map(Number);
-            const ahoraMin = hoy.getHours() * 60 + hoy.getMinutes();
+            const ahoraMin = gmt3.getHours() * 60 + gmt3.getMinutes();
             const turnoMin = h * 60 + m;
             if (turnoMin <= ahoraMin) {
                 return res.status(400).json({ error: 'No se puede reservar para una hora que ya pasó.' });
