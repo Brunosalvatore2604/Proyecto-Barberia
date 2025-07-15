@@ -204,6 +204,17 @@ body {
         flex-direction: column;
         gap: 0.7rem;
     }
+    #login-section {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.7em;
+    }
+    #admin-pass, #btn-login {
+        width: 100%;
+        margin-right: 0;
+        box-sizing: border-box;
+    }
     #solicitudes-table th, #solicitudes-table td {
         font-size: 0.95em;
         padding: 0.5em 0.2em;
