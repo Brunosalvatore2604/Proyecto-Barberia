@@ -242,11 +242,11 @@ app.get('/api/cancelar/:token', async (req, res) => {
 // --- Utilidad para correos HTML con banner y título rosado ---
 function mailTemplate({ titulo, cuerpo }) {
     return `
-    <div style="font-family:sans-serif;max-width:480px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px #0001;">
-      <img src=\"https://drive.google.com/uc?export=view&id=1kgNsMdQUk5cIxzARKWZ0M-sP1Vy-M_ya\" alt=\"Beauty Club\" style=\"width:100%;display:block;max-height:180px;object-fit:cover;\">
+    <div style="font-family:sans-serif;max-width:480px;margin:auto;background:#18141c;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px #0001;">
+      <img src=\"https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4\" alt=\"Beauty Club\" style=\"width:100%;display:block;max-height:180px;object-fit:cover;\">
       <div style=\"padding:24px 18px 18px 18px;\">
-        <h2 style=\"color:#BBA3D0;font-weight:bold;text-align:center;margin-top:0;margin-bottom:18px;\">${titulo}</h2>
-        <div style=\"font-size:1.08em;color:#23232b;line-height:1.6;\">${cuerpo}</div>
+        <h2 style=\"color:#BBA3D0;font-weight:bold;text-align:center;margin-top:0;margin-bottom:18px;letter-spacing:0.5px;\">${titulo}</h2>
+        <div style=\"font-size:1.08em;color:#fff;line-height:1.6;\">${cuerpo}</div>
       </div>
     </div>
     `;
