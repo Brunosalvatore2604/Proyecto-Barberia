@@ -160,7 +160,7 @@ app.post('/api/turnos', async (req, res) => {
             <li><b>Hora:</b> ${hora}</li>
             <li><b>Teléfono:</b> ${telefono}</li>
           </ul>
-          <p>¿No puedes asistir? <a href=\"${cancelUrl}\" style=\"color:#BBA3D0;font-weight:bold;\">Cancela tu reserva aquí</a>.</p>
+          <p>¿No puedes asistir? <a href=\"${cancelUrl}\" style=\"color:#ffffff;font-weight:bold;\">Cancela tu reserva aquí</a>.</p>
           <p><b>¡Te esperamos en Beauty Club!</b></p>
         `;
         await transporter.sendMail({
@@ -178,7 +178,7 @@ app.post('/api/turnos', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#ffffff;">
+                <thead style="background:#BBA3D0;color:#23232b;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -245,7 +245,7 @@ function mailTemplate({ titulo, cuerpo }) {
     <div style="font-family:sans-serif;max-width:480px;margin:auto;background:#18141c;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px #0001;">
       <img src=\"https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4\" alt=\"Beauty Club\" style=\"width:100%;display:block;max-height:180px;object-fit:cover;\">
       <div style=\"padding:24px 18px 18px 18px;\">
-        <h2 style=\"color:#BBA3D0;font-weight:bold;text-align:center;margin-top:0;margin-bottom:18px;letter-spacing:0.5px;\">${titulo}</h2>
+        <h2 style=\"color:#ffffff;font-weight:bold;text-align:center;margin-top:0;margin-bottom:18px;letter-spacing:0.5px;\">${titulo}</h2>
         <div style=\"font-size:1.08em;color:#fff;line-height:1.6;\">${cuerpo}</div>
       </div>
     </div>
@@ -267,7 +267,7 @@ app.post('/api/cancelar/:token', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" style=\"border-collapse:collapse;font-family:sans-serif;font-size:1em;\">
-                <thead style=\"background:#BBA3D0;color:#ffffff;\">
+                <thead style=\"background:color:#ffffff;color:#23232b;\">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -360,7 +360,7 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#ffffff;">
+                <thead style="background:#BBA3D0;color:#23232b;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -425,7 +425,7 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#ffffff;">
+                <thead style="background:#BBA3D0;color:#23232b;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -495,7 +495,7 @@ app.post('/api/inscribirse', async (req, res) => {
         const cuerpoAdmin = `
           <p><b>Nombre:</b> ${nombre}</p>
           <p><b>Gmail:</b> ${gmail}</p>
-          <p>Para validar o rechazar esta solicitud, ingresa al <a href="${adminUrl}" style="color:#BBA3D0;font-weight:bold;">panel de administración</a>.</p>
+          <p>Para validar o rechazar esta solicitud, ingresa al <a href="${adminUrl}" style="color:#ffffff;font-weight:bold;">panel de administración</a>.</p>
         `;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
@@ -539,7 +539,7 @@ app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
             const cuerpoVal = `
               <p><b>Hola ${nombre},</b></p>
               <p>Tu inscripción ha sido <b>validada</b>. Ya puedes reservar tu turno en Beauty Club.</p>
-              <p>Ingresa a <a href=\"https://proyecto-barberia-production.up.railway.app/\" style=\"color:#BBA3D0;font-weight:bold;\">https://proyecto-barberia-production.up.railway.app/</a> para agendar tu cita.</p>
+              <p>Ingresa a <a href=\"https://proyecto-barberia-production.up.railway.app/\" style=\"color:#ffffff;font-weight:bold;\">https://proyecto-barberia-production.up.railway.app/</a> para agendar tu cita.</p>
               <p><b>¡Te esperamos!</b></p>
             `;
             await transporter.sendMail({
@@ -557,7 +557,7 @@ app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
         const tablaHtml = `
             <h2>Usuarios validados (pueden reservar)</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#ffffff;">
+                <thead style="background:#BBA3D0;color:#23232b;">
                     <tr><th>Nombre</th><th>Gmail</th></tr>
                 </thead>
                 <tbody>
@@ -673,7 +673,7 @@ async function marcarTurnosPasadosYCalificar() {
                   <div style='font-family:sans-serif;max-width:480px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px #0001;'>
                     <img src="https://drive.google.com/uc?export=view&id=1kgNsMdQUk5cIxzARKWZ0M-sP1Vy-M_ya" alt="Beauty Club" style="width:100%;display:block;max-height:180px;object-fit:cover;">
                     <div style='padding:24px 18px 18px 18px;'>
-                      <h2 style='color:#BBA3D0;'>¡Gracias por tu visita!</h2>
+                      <h2 style='color:#ffffff;'>¡Gracias por tu visita!</h2>
                       <p>¿Cómo calificarías tu servicio de <b>${t.servicio}</b> con <b>${t.profesional}</b>?</p>
                       <p><a href='${calificarUrl}' style='background:#BBA3D0;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;'>Calificar mi experiencia</a></p>
                       <p style='font-size:0.9em;color:#888;'>Tu opinión nos ayuda a mejorar.</p>
