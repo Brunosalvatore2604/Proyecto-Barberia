@@ -178,7 +178,7 @@ app.post('/api/turnos', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#23232b;">
+                <thead style="background:#BBA3D0;color:#ffffff;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -267,7 +267,7 @@ app.post('/api/cancelar/:token', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" style=\"border-collapse:collapse;font-family:sans-serif;font-size:1em;\">
-                <thead style=\"background:#BBA3D0;color:#23232b;\">
+                <thead style=\"background:#BBA3D0;color:#ffffff;\">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -360,7 +360,7 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#23232b;">
+                <thead style="background:#BBA3D0;color:#ffffff;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -425,7 +425,7 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#23232b;">
+                <thead style="background:#BBA3D0;color:#ffffff;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -557,7 +557,7 @@ app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
         const tablaHtml = `
             <h2>Usuarios validados (pueden reservar)</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:#23232b;">
+                <thead style="background:#BBA3D0;color:#ffffff;">
                     <tr><th>Nombre</th><th>Gmail</th></tr>
                 </thead>
                 <tbody>
