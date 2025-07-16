@@ -185,7 +185,7 @@ app.post('/api/turnos', async (req, res) => {
                 </thead>
                 <tbody>
                     ${pendientes.map(r => `
-                        <tr>
+                        <tr style='color:#fff;'>
                             <td>${r.fecha instanceof Date ? r.fecha.toISOString().slice(0,10) : r.fecha}</td>
                             <td>${r.hora.slice(0,5)}</td>
                             <td>${r.profesional}</td>
