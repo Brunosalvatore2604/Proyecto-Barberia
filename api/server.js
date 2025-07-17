@@ -151,17 +151,35 @@ app.post('/api/turnos', async (req, res) => {
         // Enviar email de confirmación con link de cancelación (HTML fachero)
         const cancelUrl = `${process.env.BASE_URL || 'https://proyecto-barberia-production.up.railway.app'}/cancelar/${token}`;
         const cuerpoConfirm = `
-          <p><b>¡Hola!</b></p>
-          <p>Tu reserva fue agendada con éxito.</p>
-          <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
-            <li><b>Servicio:</b> ${servicio}</li>
-            <li><b>Profesional:</b> ${profesional}</li>
-            <li><b>Fecha:</b> ${fecha}</li>
-            <li><b>Hora:</b> ${hora}</li>
-            <li><b>Teléfono:</b> ${telefono}</li>
-          </ul>
-          <p>¿No puedes asistir? <a href=\"${cancelUrl}\" style=\"color:#ffffff;font-weight:bold;\">Cancela tu reserva aquí</a>.</p>
-          <p><b>¡Te esperamos en Beauty Club!</b></p>
+          <body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="Banner" style="width:100%; display:block;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:30px;">
+        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">¡Hola!</h1>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Tu reserva fue agendada con éxito.
+        </p>
+        <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
+          <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${servicio}</li>
+          <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${profesional}</li>
+          <li style="margin-bottom:8px;"><strong>Fecha:</strong> ${fecha}</li>
+          <li style="margin-bottom:8px;"><strong>Hora:</strong> ${hora}</li>
+          <li style="margin-bottom:8px;"><strong>Teléfono:</strong> ${telefono}</li>
+        </ul>
+        <p style="font-size:16px; line-height:1.5;">
+          ¿No puedes asistir? 
+          <a href="${cancelUrl}" style="color:#00c9ff; font-weight:bold; text-decoration:none;">Cancela tu reserva aquí</a>.
+        </p>
+        <p style="font-size:18px; margin-top:30px;"><strong>¡Te esperamos en Beauty Club!</strong></p>
+      </td>
+    </tr>
+  </table>
+</body>
         `;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
