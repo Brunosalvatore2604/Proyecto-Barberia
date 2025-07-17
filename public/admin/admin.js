@@ -40,14 +40,14 @@ document.getElementById('btn-solicitudes').onclick = () => {
 
 async function cargarCalificaciones() {
     calificacionesList.innerHTML = 'Cargando calificaciones...';
-    const res = await fetch('/api/admin/reservas');
+    const res = await fetch('/api/admin/calificaciones');
     const data = await res.json();
     if (!data.ok) {
         calificacionesList.innerHTML = '<div style="color:#c00">Error al cargar calificaciones</div>';
         return;
     }
-    // Solo mostrar turnos pasados y calificados
-    const calificados = data.reservas.filter(r => r.puntuacion && r.puntuacion > 0);
+    // Solo mostrar turnos calificados
+    const calificados = data.calificaciones;
     if (calificados.length === 0) {
         calificacionesList.innerHTML = '<div>No hay turnos calificados aún.</div>';
         return;

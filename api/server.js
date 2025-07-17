@@ -371,6 +371,15 @@ app.get('/admin', (req, res) => {
 });
 
 // Endpoint API: listar reservas (admin)
+// Endpoint API: listar todas las calificaciones (admin)
+app.get('/api/admin/calificaciones', async (req, res) => {
+    try {
+        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora, puntuacion, comentario FROM turnos WHERE puntuacion IS NOT NULL AND puntuacion > 0 ORDER BY fecha DESC, hora DESC');
+        res.json({ ok: true, calificaciones: rows });
+    } catch (err) {
+        res.json({ ok: false, mensaje: 'Error al consultar calificaciones' });
+    }
+});
 app.get('/api/admin/reservas', async (req, res) => {
     try {
         // Obtener fecha y hora actual en Uruguay (GMT-3)
@@ -386,7 +395,7 @@ app.get('/api/admin/reservas', async (req, res) => {
         const ahoraMin = horaAct * 60 + minAct;
 
         // Traer todas las reservas ordenadas
-        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora, puntuacion, comentario FROM turnos ORDER BY fecha, hora');
+        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora, puntuacion, comentario FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora');
         res.json({ ok: true, reservas: rows });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al consultar reservas' });
