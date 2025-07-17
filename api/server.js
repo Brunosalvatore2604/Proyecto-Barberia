@@ -449,33 +449,34 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
                 from: 'beautyclub.automatic@gmail.com',
                 to: turno.nombre,
                 subject: 'Tu reserva en Beauty Club ha sido cancelada',
-                html: `<body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+                html: `<body style="margin: 0; padding: 0; background-color: #0d0d0d; font-family: Arial, sans-serif; color: #ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 10px; overflow: hidden;">
     <tr>
       <td>
-        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="Logo" style="width: 100%; display: block;">
       </td>
     </tr>
     <tr>
-      <td style="padding:30px;">
-        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">Hola,</h1>
-        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
-          Te informamos que tu reserva ha sido <strong>cancelada</strong>.
+      <td style="padding: 30px;">
+        <h2 style="margin-top: 0; color: #ffffff;">Hola,</h2>
+        <p style="font-size: 16px; color: #cccccc;">
+          Te informamos que tu reserva ha sido <span style="color: #ff4d4d;"><strong>cancelada</strong></span>.
         </p>
-        <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
-          <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${turno.servicio}</li>
-          <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${turno.profesional}</li>
-          <li style="margin-bottom:8px;"><strong>Fecha:</strong> ${turno.fecha}</li>
-          <li style="margin-bottom:8px;"><strong>Hora:</strong> ${turno.hora}</li>
-        </ul>
-        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
-          Si tienes dudas, contáctanos.
+        <div style="margin-top: 20px; margin-bottom: 20px;">
+          <p style="margin: 5px 0;"><strong>Servicio:</strong> ${turno.servicio}</p>
+          <p style="margin: 5px 0;"><strong>Profesional:</strong> ${turno.profesional}</p>
+          <p style="margin: 5px 0;"><strong>Fecha:</strong> ${turno.fecha}</p>
+          <p style="margin: 5px 0;"><strong>Hora:</strong> ${turno.hora}</p>
+        </div>
+        <p style="font-size: 16px; color: #cccccc;">
+          Si tienes dudas, no dudes en contactarnos.
         </p>
-        <p style="font-size:18px; margin-top:30px;"><strong>Beauty Club</strong></p>
+        <p style="margin-top: 30px; font-size: 18px;"><strong>Beauty Club</strong></p>
       </td>
     </tr>
   </table>
-</body>`
+</body>
+`
             });
         }
         res.json({ ok: true });
