@@ -388,17 +388,17 @@ app.get('/api/admin/reservas', async (req, res) => {
         // Traer todas las reservas ordenadas
         const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora, puntuacion, comentario FROM turnos ORDER BY fecha, hora');
         // Filtrar solo las que no han pasado
-        const reservasNoPasadas = rows.filter(r => {
+        const reservasFuturas = rows.filter(r => {
             // r.fecha: 'YYYY-MM-DD', r.hora: 'HH:MM'
             if (!r.fecha || !r.hora) return false;
-            if (r.fecha > fechaHoy) return true;
-            if (r.fecha < fechaHoy) return false;
+            if (r.fecha < fechaHoy) return false; // Pasados
+            if (r.fecha > fechaHoy) return true;  // Futuro
             // Si es hoy, comparar hora
             const [h, m] = r.hora.split(':').map(Number);
             const turnoMin = h * 60 + m;
-            return turnoMin >= ahoraMin;
+            return turnoMin > ahoraMin;
         });
-        res.json({ ok: true, reservas: reservasNoPasadas });
+        res.json({ ok: true, reservas: reservasFuturas });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al consultar reservas' });
     }
