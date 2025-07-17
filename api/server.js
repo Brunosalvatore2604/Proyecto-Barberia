@@ -449,7 +449,33 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
                 from: 'beautyclub.automatic@gmail.com',
                 to: turno.nombre,
                 subject: 'Tu reserva en Beauty Club ha sido cancelada',
-                text: `Hola,\n\nTe informamos que tu reserva ha sido cancelada.\n\nServicio: ${turno.servicio}\nProfesional: ${turno.profesional}\nFecha: ${turno.fecha}\nHora: ${turno.hora}\n\nSi tienes dudas, contáctanos.\n\nBeauty Club`
+                html: `<body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:30px;">
+        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">Hola,</h1>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Te informamos que tu reserva ha sido <strong>cancelada</strong>.
+        </p>
+        <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
+          <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${turno.servicio}</li>
+          <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${turno.profesional}</li>
+          <li style="margin-bottom:8px;"><strong>Fecha:</strong> ${turno.fecha}</li>
+          <li style="margin-bottom:8px;"><strong>Hora:</strong> ${turno.hora}</li>
+        </ul>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Si tienes dudas, contáctanos.
+        </p>
+        <p style="font-size:18px; margin-top:30px;"><strong>Beauty Club</strong></p>
+      </td>
+    </tr>
+  </table>
+</body>`
             });
         }
         res.json({ ok: true });
