@@ -155,7 +155,7 @@ app.post('/api/turnos', async (req, res) => {
   <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
     <tr>
       <td>
-        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="Banner" style="width:100%; display:block;">
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
       </td>
     </tr>
     <tr>
@@ -312,15 +312,33 @@ app.post('/api/cancelar/:token', async (req, res) => {
         });
         // Enviar correo HTML al usuario notificando la cancelación
         const cuerpo = `
-          <p><b>Hola,</b></p>
-          <p>Te informamos que tu reserva ha sido <b>cancelada</b>.</p>
-          <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
-            <li><b>Servicio:</b> ${turno.servicio}</li>
-            <li><b>Profesional:</b> ${turno.profesional}</li>
-            <li><b>Fecha:</b> ${turno.fecha}</li>
-            <li><b>Hora:</b> ${turno.hora}</li>
-          </ul>
-          <p>Si tienes dudas, contáctanos.<br><b>Beauty Club</b></p>
+          <body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:30px;">
+        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">Hola,</h1>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Te informamos que tu reserva ha sido <strong>cancelada</strong>.
+        </p>
+        <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
+          <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${turno.servicio}</li>
+          <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${turno.profesional}</li>
+          <li style="margin-bottom:8px;"><strong>Fecha:</strong> ${turno.fecha}</li>
+          <li style="margin-bottom:8px;"><strong>Hora:</strong> ${turno.hora}</li>
+        </ul>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Si tienes dudas, contáctanos.<br>
+          <strong>Beauty Club</strong>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
         `;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
@@ -495,15 +513,33 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
         // Enviar correo HTML al usuario notificando el cambio de horario
         if (turno) {
             const cuerpoEdit = `
-              <p><b>Hola,</b></p>
-              <p>Te informamos que tu reserva ha sido <b>modificada</b> por el administrador.</p>
-              <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
-                <li><b>Servicio:</b> ${turno.servicio}</li>
-                <li><b>Profesional:</b> ${turno.profesional}</li>
-                <li><b>Nueva fecha:</b> ${fecha}</li>
-                <li><b>Nueva hora:</b> ${hora}</li>
-              </ul>
-              <p>Si tienes dudas, contáctanos.<br><b>Beauty Club</b></p>
+              <body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:30px;">
+        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">Hola,</h1>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Te informamos que tu reserva ha sido <strong>modificada</strong> por el administrador.
+        </p>
+        <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
+          <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${turno.servicio}</li>
+          <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${turno.profesional}</li>
+          <li style="margin-bottom:8px;"><strong>Nueva fecha:</strong> ${fecha}</li>
+          <li style="margin-bottom:8px;"><strong>Nueva hora:</strong> ${hora}</li>
+        </ul>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Si tienes dudas, contáctanos.<br>
+          <strong>Beauty Club</strong>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
             `;
             await transporter.sendMail({
                 from: 'beautyclub.automatic@gmail.com',
@@ -579,10 +615,31 @@ app.put('/api/admin/solicitudes/:id/aceptar', async (req, res) => {
             const { nombre, gmail } = rows[0];
             // Enviar email de notificación al usuario (HTML fachero)
             const cuerpoVal = `
-              <p><b>Hola ${nombre},</b></p>
-              <p>Tu inscripción ha sido <b>validada</b>. Ya puedes reservar tu turno en Beauty Club.</p>
-              <p>Ingresa a <a href=\"https://proyecto-barberia-production.up.railway.app/\" style=\"color:#ffffff;font-weight:bold;\">https://proyecto-barberia-production.up.railway.app/</a> para agendar tu cita.</p>
-              <p><b>¡Te esperamos!</b></p>
+              <body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:30px;">
+        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">Hola ${nombre},</h1>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Tu inscripción ha sido <strong>validada</strong>. Ya puedes reservar tu turno en Beauty Club.
+        </p>
+        <p style="font-size:16px; line-height:1.5;">
+          Ingresa a  
+          <a href="https://proyecto-barberia-production.up.railway.app/" style="color:#00c9ff; font-weight:bold; text-decoration:none;">
+            https://proyecto-barberia-production.up.railway.app/
+          </a> 
+          para agendar tu cita.
+        </p>
+        <p style="font-size:18px; margin-top:30px;"><strong>¡Te esperamos!</strong></p>
+      </td>
+    </tr>
+  </table>
+</body>
             `;
             await transporter.sendMail({
                 from: 'beautyclub.automatic@gmail.com',
@@ -651,17 +708,34 @@ function enviarRecordatoriosTurnos() {
         .then(async ([turnos]) => {
             for (const t of turnos) {
                 const cuerpoRec = `
-                  <p><b>Hola!</b></p>
-                  <p>Te recordamos que tienes un turno reservado para <b>mañana</b> en Beauty Club.</p>
-                  <ul style=\"margin:14px 0 18px 0;padding-left:18px;\">
-                    <li><b>Servicio:</b> ${t.servicio}</li>
-                    <li><b>Profesional:</b> ${t.profesional}</li>
-                    <li><b>Fecha:</b> ${t.fecha}</li>
-                    <li><b>Hora:</b> ${t.hora.slice(0,5)}</li>
-                    <li><b>Teléfono:</b> ${t.telefono}</li>
-                  </ul>
-                  <p>Si no puedes asistir, por favor cancela tu turno desde el enlace de confirmación.</p>
-                  <p><b>¡Te esperamos!</b></p>
+                  <body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:30px;">
+        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">¡Hola!</h1>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Te recordamos que tienes un turno reservado para <strong>mañana</strong> en Beauty Club.
+        </p>
+        <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
+          <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${t.servicio}</li>
+          <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${t.profesional}</li>
+          <li style="margin-bottom:8px;"><strong>Fecha:</strong> ${t.fecha}</li>
+          <li style="margin-bottom:8px;"><strong>Hora:</strong> ${t.hora.slice(0,5)}</li>
+          <li style="margin-bottom:8px;"><strong>Teléfono:</strong> ${t.telefono}</li>
+        </ul>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          Si no puedes asistir, por favor cancela tu turno desde el enlace de confirmación.
+        </p>
+        <p style="font-size:18px; margin-top:30px;"><strong>¡Te esperamos!</strong></p>
+      </td>
+    </tr>
+  </table>
+</body>
                 `;
                 await transporter.sendMail({
                     from: 'beautyclub.automatic@gmail.com',
@@ -712,15 +786,31 @@ async function marcarTurnosPasadosYCalificar() {
                 to: t.nombre,
                 subject: '¿Cómo fue tu experiencia en Beauty Club?',
                 html: `
-                  <div style='font-family:sans-serif;max-width:480px;margin:auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px #0001;'>
-                    <img src="https://drive.google.com/uc?export=view&id=1kgNsMdQUk5cIxzARKWZ0M-sP1Vy-M_ya" alt="Beauty Club" style="width:100%;display:block;max-height:180px;object-fit:cover;">
-                    <div style='padding:24px 18px 18px 18px;'>
-                      <h2 style='color:#ffffff;'>¡Gracias por tu visita!</h2>
-                      <p>¿Cómo calificarías tu servicio de <b>${t.servicio}</b> con <b>${t.profesional}</b>?</p>
-                      <p><a href='${calificarUrl}' style='background:#BBA3D0;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;'>Calificar mi experiencia</a></p>
-                      <p style='font-size:0.9em;color:#888;'>Tu opinión nos ayuda a mejorar.</p>
-                    </div>
-                  </div>
+                  <body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:12px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.1);">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1kgNsMdQUk5cIxzARKWZ0M-sP1Vy-M_ya" alt="Beauty Club" style="width:100%; display:block; max-height:200px; object-fit:cover;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:24px 18px 18px 18px;">
+        <h2 style="color:#ffffff; font-size:22px; margin-top:0;">¡Gracias por tu visita!</h2>
+        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+          ¿Cómo calificarías tu servicio de <strong>${t.servicio}</strong> con <strong>${t.profesional}</strong>?
+        </p>
+        <p style="margin:24px 0;">
+          <a href="${calificarUrl}" style="background-color:#BBA3D0; color:#ffffff; padding:12px 20px; border-radius:8px; text-decoration:none; font-weight:bold;">
+            Calificar mi experiencia
+          </a>
+        </p>
+        <p style="font-size:14px; color:#999999;">
+          Tu opinión nos ayuda a mejorar.
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
                 `
             });
         }
