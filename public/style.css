@@ -469,3 +469,9 @@ footer {
         transform: translateY(100vh) scale(0.9);
     }
 }
+
+/* Forzar color blanco para el título Beauty Club en inicio y agenda */
+h1.titulo-beautyclub, h2.titulo-beautyclub {
+    color: #fff !important;
+    text-shadow: 0 2px 12px #9B71B055;
+}
