@@ -196,14 +196,14 @@ app.post('/api/turnos', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:black;">
+                <thead style="background:#BBA3D0;color:#fff;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${pendientes.map(r => `
-                        <tr style='color:#fff;'>
+                        <tr style='color:#000000;'>
                             <td>${r.fecha instanceof Date ? r.fecha.toISOString().slice(0,10) : r.fecha}</td>
                             <td>${r.hora.slice(0,5)}</td>
                             <td>${r.profesional}</td>
@@ -279,13 +279,22 @@ app.post('/api/cancelar/:token', async (req, res) => {
             return res.json({ ok: false, mensaje: 'Reserva no encontrada o ya cancelada.' });
         }
         const turno = rows[0];
+        // Formatear fecha a dd/mm/aaaa
+        let fecha = turno.fecha;
+        if (fecha instanceof Date) {
+            fecha = fecha.toISOString().slice(0,10);
+        }
+        if (typeof fecha === 'string' && fecha.includes('-')) {
+            const [y,m,d] = fecha.slice(0,10).split('-');
+            fecha = `${d}/${m}/${y}`;
+        }
         await pool.query('DELETE FROM turnos WHERE token = ?', [token]);
         // Enviar agenda de reservas pendientes al admin tras cancelar
         const [pendientes] = await pool.query("SELECT nombre, profesional, telefono, servicio, fecha, hora FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora");
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border=\"1\" cellpadding=\"8\" cellspacing=\"0\" style=\"border-collapse:collapse;font-family:sans-serif;font-size:1em;\">
-                <thead style=\"background:#BBA3D0;color:#black;\">
+                <thead style=\"background:#BBA3D0;color:#000000;\">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -313,42 +322,66 @@ app.post('/api/cancelar/:token', async (req, res) => {
         // Enviar correo HTML al usuario notificando la cancelación
         const cuerpo = `
           <body style="margin:0; padding:0; background-color:#121212; font-family:Arial, sans-serif; color:#ffffff;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
-    <tr>
-      <td>
-        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
-      </td>
-    </tr>
-    <tr>
-      <td style="padding:30px;">
-        <h1 style="margin-top:0; color:#ffffff; font-size:24px;">Hola,</h1>
-        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
-          Te informamos que tu reserva ha sido <strong>cancelada</strong>.
-        </p>
-        <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
-          <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${turno.servicio}</li>
-          <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${turno.profesional}</li>
-          <li style="margin-bottom:8px;"><strong>Fecha:</strong> ${turno.fecha}</li>
-          <li style="margin-bottom:8px;"><strong>Hora:</strong> ${turno.hora}</li>
-        </ul>
-        <p style="font-size:16px; line-height:1.5; color:#dddddd;">
-          Si tienes dudas, contáctanos.<br>
-          <strong>Beauty Club</strong>
-        </p>
-      </td>
-    </tr>
-  </table>
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:0 auto; background-color:#1e1e1e; border-radius:8px; overflow:hidden;">
+<tr>
+  <td>
+    <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="" style="width:100%; display:block;">
+  </td>
+</tr>
+<tr>
+  <td style="padding:30px;">
+    <h1 style="margin-top:0; color:#ffffff; font-size:24px;">Hola,</h1>
+    <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+      Te informamos que tu reserva ha sido <strong>cancelada</strong>.
+    </p>
+    <ul style="margin:20px 0 20px 20px; padding:0; list-style: none; color:#ffffff;">
+      <li style="margin-bottom:8px;"><strong>Servicio:</strong> ${turno.servicio}</li>
+      <li style="margin-bottom:8px;"><strong>Profesional:</strong> ${turno.profesional}</li>
+      <li style="margin-bottom:8px;"><strong>Fecha:</strong> ${fecha}</li>
+      <li style="margin-bottom:8px;"><strong>Hora:</strong> ${turno.hora}</li>
+    </ul>
+    <p style="font-size:16px; line-height:1.5; color:#dddddd;">
+      Si tienes dudas, contáctanos.<br>
+      <strong>Beauty Club</strong>
+    </p>
+  </td>
+</tr>
+</table>
 </body>
         `;
         await transporter.sendMail({
             from: 'beautyclub.automatic@gmail.com',
             to: turno.nombre,
             subject: 'Tu reserva en Beauty Club ha sido cancelada',
-            html: mailTemplate({
-                titulo: 'Reserva cancelada',
-                cuerpo
-            })
-        });
+            html: `<body style="margin: 0; padding: 0; background-color: #0d0d0d; font-family: Arial, sans-serif; color: #ffffff;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #1a1a1a; border-radius: 10px; overflow: hidden;">
+    <tr>
+      <td>
+        <img src="https://drive.google.com/uc?export=view&id=1gFTykHd5N0-vNVWcoBM6jCidDSacFIP4" alt="Logo" style="width: 100%; display: block;">
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 30px;">
+        <h2 style="margin-top: 0; color: #ffffff;">Hola,</h2>
+        <p style="font-size: 16px; color: #cccccc;">
+          Te informamos que tu reserva ha sido <span style="color: #ff4d4d;"><strong>cancelada</strong></span>.
+        </p>
+        <div style="margin-top: 20px; margin-bottom: 20px;">
+          <p style="margin: 5px 0;"><strong>Servicio:</strong> ${turno.servicio}</p>
+          <p style="margin: 5px 0;"><strong>Profesional:</strong> ${turno.profesional}</p>
+          <p style="margin: 5px 0;"><strong>Fecha:</strong> ${fecha}</p>
+          <p style="margin: 5px 0;"><strong>Hora:</strong> ${turno.hora}</p>
+        </div>
+        <p style="font-size: 16px; color: #cccccc;">
+          Si tienes dudas, no dudes en contactarnos.
+        </p>
+        <p style="margin-top: 30px; font-size: 18px;"><strong>Beauty Club</strong></p>
+      </td>
+    </tr>
+  </table>
+</body>
+`
+    });
         res.json({ ok: true, mensaje: 'Tu reserva ha sido cancelada exitosamente.' });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al cancelar la reserva.' });
@@ -418,7 +451,7 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:black;">
+                <thead style="background:#BBA3D0;color:#000000;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
@@ -445,6 +478,15 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
         });
         // Enviar correo al usuario notificando la cancelación (si existía el turno)
         if (turno) {
+            // Formatear fecha a dd/mm/aaaa
+            let fecha = turno.fecha;
+            if (fecha instanceof Date) {
+                fecha = fecha.toISOString().slice(0,10);
+            }
+            if (typeof fecha === 'string' && fecha.includes('-')) {
+                const [y,m,d] = fecha.slice(0,10).split('-');
+                fecha = `${d}/${m}/${y}`;
+            }
             await transporter.sendMail({
                 from: 'beautyclub.automatic@gmail.com',
                 to: turno.nombre,
@@ -465,7 +507,7 @@ app.delete('/api/admin/reservas/:id', async (req, res) => {
         <div style="margin-top: 20px; margin-bottom: 20px;">
           <p style="margin: 5px 0;"><strong>Servicio:</strong> ${turno.servicio}</p>
           <p style="margin: 5px 0;"><strong>Profesional:</strong> ${turno.profesional}</p>
-          <p style="margin: 5px 0;"><strong>Fecha:</strong> ${turno.fecha}</p>
+          <p style="margin: 5px 0;"><strong>Fecha:</strong> ${fecha}</p>
           <p style="margin: 5px 0;"><strong>Hora:</strong> ${turno.hora}</p>
         </div>
         <p style="font-size: 16px; color: #cccccc;">
@@ -510,7 +552,7 @@ app.put('/api/admin/reservas/:id', async (req, res) => {
         const agendaHtml = `
             <h2>Agenda de reservas pendientes</h2>
             <table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-family:sans-serif;font-size:1em;">
-                <thead style="background:#BBA3D0;color:black;">
+                <thead style="background:#BBA3D0;color:#000000;">
                     <tr>
                         <th>Fecha</th><th>Hora</th><th>Profesional</th><th>Servicio</th><th>Cliente (correo)</th><th>Teléfono</th>
                     </tr>
