@@ -129,14 +129,36 @@ app.post('/api/turnos', async (req, res) => {
             }
         }
 
-        // Verifica si el mail ya tiene una reserva en los próximos 6 días (solo futuras o de hoy)
-        const [reservas] = await pool.query(
-            `SELECT id FROM turnos WHERE nombre = ? AND fecha >= CURDATE() AND fecha <= DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
+        // Verifica si el mail ya tiene una reserva en los próximos 6 días (solo futuras o de hoy, usando GMT-3)
+        const [turnosUsuario] = await pool.query(
+            `SELECT fecha, hora FROM turnos WHERE nombre = ? AND fecha >= DATE_SUB(CURDATE(), INTERVAL 1 DAY) AND fecha <= DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
             [correo]
         );
-        if (reservas.length > 0) {
-            return res.status(409).json({ error: 'Ya tienes una reserva en los próximos 6 días.' });
+        // Calcular fecha y hora actual en Uruguay (GMT-3)
+        const ahora = new Date();
+        const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
+        const gmt3 = new Date(utc - (3 * 60 * 60 * 1000));
+        const yyyy = gmt3.getFullYear();
+        const mm = String(gmt3.getMonth() + 1).padStart(2, '0');
+        const dd = String(gmt3.getDate()).padStart(2, '0');
+        const fechaHoy = `${yyyy}-${mm}-${dd}`;
+        const ahoraMin = gmt3.getHours() * 60 + gmt3.getMinutes();
+
+        // Solo bloquear si tiene un turno futuro o de hoy que no pasó
+        const tieneReservaActiva = turnosUsuario.some(r => {
+            const fecha = typeof r.fecha === 'string' ? r.fecha.slice(0,10) : r.fecha.toISOString().slice(0,10);
+            if (fecha > fechaHoy) return true;
+            if (fecha < fechaHoy) return false;
+            // Si es hoy, comparar hora
+            const [h, m] = r.hora.split(':').map(Number);
+            const turnoMin = h * 60 + m;
+            return turnoMin >= ahoraMin;
+        });
+
+        if (tieneReservaActiva) {
+            return res.status(409).json({ error: 'Ya tienes una reserva pendiente en los próximos días.' });
         }
+
         // Verificar si el horario ya está ocupado para ese profesional
         const [rows] = await pool.query('SELECT id FROM turnos WHERE fecha = ? AND hora = ? AND profesional = ?', [fecha, hora, profesional]);
         if (rows.length > 0) {
@@ -415,7 +437,10 @@ app.get('/api/admin/calificaciones', async (req, res) => {
 });
 app.get('/api/admin/reservas', async (req, res) => {
     try {
-        // Obtener fecha y hora actual en Uruguay (GMT-3)
+        // Obtener todos los turnos
+        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora, puntuacion, comentario FROM turnos ORDER BY fecha, hora');
+
+        // Calcular fecha y hora actual en Uruguay (GMT-3)
         const ahora = new Date();
         const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
         const gmt3 = new Date(utc - (3 * 60 * 60 * 1000));
@@ -423,13 +448,20 @@ app.get('/api/admin/reservas', async (req, res) => {
         const mm = String(gmt3.getMonth() + 1).padStart(2, '0');
         const dd = String(gmt3.getDate()).padStart(2, '0');
         const fechaHoy = `${yyyy}-${mm}-${dd}`;
-        const horaAct = gmt3.getHours();
-        const minAct = gmt3.getMinutes();
-        const ahoraMin = horaAct * 60 + minAct;
+        const ahoraMin = gmt3.getHours() * 60 + gmt3.getMinutes();
 
-        // Traer todas las reservas ordenadas
-        const [rows] = await pool.query('SELECT id, nombre, profesional, telefono, servicio, fecha, hora, puntuacion, comentario FROM turnos WHERE fecha >= CURDATE() ORDER BY fecha, hora');
-        res.json({ ok: true, reservas: rows });
+        // Filtrar turnos: solo los futuros o los de hoy que no pasaron
+        const reservas = rows.filter(r => {
+            const fecha = typeof r.fecha === 'string' ? r.fecha.slice(0,10) : r.fecha.toISOString().slice(0,10);
+            if (fecha > fechaHoy) return true;
+            if (fecha < fechaHoy) return false;
+            // Si es hoy, comparar hora
+            const [h, m] = r.hora.split(':').map(Number);
+            const turnoMin = h * 60 + m;
+            return turnoMin >= ahoraMin;
+        });
+
+        res.json({ ok: true, reservas });
     } catch (err) {
         res.json({ ok: false, mensaje: 'Error al consultar reservas' });
     }
