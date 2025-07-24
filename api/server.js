@@ -129,9 +129,9 @@ app.post('/api/turnos', async (req, res) => {
             }
         }
 
-        // Verifica si el mail ya tiene una reserva en los próximos 6 días
+        // Verifica si el mail ya tiene una reserva en los próximos 6 días (solo futuras o de hoy)
         const [reservas] = await pool.query(
-            `SELECT id FROM turnos WHERE nombre = ? AND fecha BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
+            `SELECT id FROM turnos WHERE nombre = ? AND fecha >= CURDATE() AND fecha <= DATE_ADD(CURDATE(), INTERVAL 6 DAY)`,
             [correo]
         );
         if (reservas.length > 0) {
