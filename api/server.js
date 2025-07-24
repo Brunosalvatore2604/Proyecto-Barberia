@@ -135,24 +135,24 @@ app.post('/api/turnos', async (req, res) => {
             [correo]
         );
         // Calcular fecha y hora actual en Uruguay (GMT-3)
-        const ahora = new Date();
-        const utc = ahora.getTime() + (ahora.getTimezoneOffset() * 60000);
-        const gmt3 = new Date(utc - (3 * 60 * 60 * 1000));
-        const yyyy = gmt3.getFullYear();
-        const mm = String(gmt3.getMonth() + 1).padStart(2, '0');
-        const dd = String(gmt3.getDate()).padStart(2, '0');
-        const fechaHoy = `${yyyy}-${mm}-${dd}`;
-        const ahoraMin = gmt3.getHours() * 60 + gmt3.getMinutes();
+        const ahora2 = new Date();
+        const utc2 = ahora2.getTime() + (ahora2.getTimezoneOffset() * 60000);
+        const gmt32 = new Date(utc2 - (3 * 60 * 60 * 1000));
+        const yyyy2 = gmt32.getFullYear();
+        const mm2 = String(gmt32.getMonth() + 1).padStart(2, '0');
+        const dd2 = String(gmt32.getDate()).padStart(2, '0');
+        const fechaHoy2 = `${yyyy2}-${mm2}-${dd2}`;
+        const ahoraMin2 = gmt32.getHours() * 60 + gmt32.getMinutes();
 
         // Solo bloquear si tiene un turno futuro o de hoy que no pasó
         const tieneReservaActiva = turnosUsuario.some(r => {
             const fecha = typeof r.fecha === 'string' ? r.fecha.slice(0,10) : r.fecha.toISOString().slice(0,10);
-            if (fecha > fechaHoy) return true;
-            if (fecha < fechaHoy) return false;
+            if (fecha > fechaHoy2) return true;
+            if (fecha < fechaHoy2) return false;
             // Si es hoy, comparar hora
             const [h, m] = r.hora.split(':').map(Number);
             const turnoMin = h * 60 + m;
-            return turnoMin >= ahoraMin;
+            return turnoMin >= ahoraMin2;
         });
 
         if (tieneReservaActiva) {
